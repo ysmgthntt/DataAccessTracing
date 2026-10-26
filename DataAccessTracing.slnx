@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/sandbox/">
+    <Project Path="sandbox/ConsoleAppNet10/ConsoleAppNet10.csproj" />
+    <Project Path="sandbox/ConsoleAppNet35/ConsoleAppNet35.csproj" />
+    <Project Path="sandbox/ConsoleAppNet48/ConsoleAppNet48.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/DataAccessTracing/DataAccessTracing.csproj" />
   </Folder>
