@@ -16,10 +16,10 @@ DataAccessTrace.ReplaceDbProviderFactoriesToTracingProvider();
 DataAccessTrace.ReplaceDbProviderFactoriesToTracingProvider();
 
 var factory = DbProviderFactories.GetFactory(providerName);
-Console.WriteLine(factory.GetType().FullName);
+Console.WriteLine(factory.ToString());
 
 var dummyFactory = DbProviderFactories.GetFactory(dummyName);
-Console.WriteLine(dummyFactory.GetType().FullName);
+Console.WriteLine(dummyFactory.ToString());
 
 
 class DummyFactory : DbProviderFactory

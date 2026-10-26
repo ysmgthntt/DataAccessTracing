@@ -75,16 +75,16 @@ namespace DataAccessTracing
                 if (!DbProviderFactories.TryGetFactory(providerName, out var factory))
                     continue;
 
-                if (factory is ITracingProviderFactory)
+                if (factory is TracingProviderFactory)
                 {
                     Trace.WriteLine($"{nameof(DataAccessTracing)}: Already replaced - {providerName}");
                     continue;
                 }
 
-                var proxyType = typeof(TracingProviderFactory<>).MakeGenericType(factory.GetType());
+                var tracingFactory = new TracingProviderFactory(factory);
 
                 DbProviderFactories.UnregisterFactory(providerName);
-                DbProviderFactories.RegisterFactory(providerName, proxyType);
+                DbProviderFactories.RegisterFactory(providerName, tracingFactory);
             }
 #endif
         }
