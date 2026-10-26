@@ -1,5 +1,5 @@
 ﻿using System.Data.Common;
-using System.Diagnostics;
+using System.Reflection;
 
 namespace DataAccessTracing
 {
@@ -8,9 +8,12 @@ namespace DataAccessTracing
     {
         public static readonly TracingProviderFactory<TDbProviderFactory> Instance = new();
 
+        private readonly TDbProviderFactory _innerFactory;
+
         public TracingProviderFactory()
         {
-            Trace.WriteLine(GetType().FullName + " ctor");
+            var fi = typeof(TDbProviderFactory).GetField(nameof(Instance), BindingFlags.Public | BindingFlags.Static);
+            _innerFactory = (TDbProviderFactory)fi.GetValue(null);
         }
     }
 }

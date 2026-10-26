@@ -35,38 +35,41 @@ namespace DataAccessTracing
                 }
             }
 
-            const string typeColumnName = nameof(Type.AssemblyQualifiedName);
-            providerTable.Columns[typeColumnName].ReadOnly = false;
+            var colTypeName = providerTable.Columns[nameof(Type.AssemblyQualifiedName)];
+            colTypeName.ReadOnly = false;
             try
             {
                 foreach (DataRow row in providerTable.Rows)
                 {
-                    DbProviderFactory factory;
-                    try
-                    {
-                        factory = DbProviderFactories.GetFactory(row);
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.WriteLine($"{nameof(DataAccessTracing)}: DbProviderFactories.GetFactory error - {row["Name"]} {ex.Message}");
-                        continue;
-                    }
-
-                    if (factory is ITracingProviderFactory)
+                    string factoryTypeName = (string)row[colTypeName];
+                    if (factoryTypeName.StartsWith(nameof(DataAccessTracing)))
                     {
                         Trace.WriteLine($"{nameof(DataAccessTracing)}: Already replaced - {row["Name"]}");
                         continue;
                     }
 
-                    var proxyType = typeof(TracingProviderFactory<>).MakeGenericType(factory.GetType());
-                    row[typeColumnName] = proxyType.AssemblyQualifiedName;
+                    Type factoryType;
+                    try
+                    {
+                        factoryType = Type.GetType(factoryTypeName);
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine($"{nameof(DataAccessTracing)}: Failed to get type for - {row["Name"]} {ex.Message}");
+                        continue;
+                    }
+
+                    var proxyType = typeof(TracingProviderFactory<>).MakeGenericType(factoryType);
+                    row[colTypeName] = proxyType.AssemblyQualifiedName;
                 }
             }
             finally
             {
-                providerTable.Columns[typeColumnName].ReadOnly = true;
+                colTypeName.ReadOnly = true;
             }
 #else
+            // DbProviderFactories.RegisterFactory は Type を渡すとインスタンス化される。
+            // すでにインスタンス化されている可能性が高いため、そのまま取得して処理する。
             foreach (var providerName in DbProviderFactories.GetProviderInvariantNames())
             {
                 if (!DbProviderFactories.TryGetFactory(providerName, out var factory))
