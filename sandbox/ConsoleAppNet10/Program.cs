@@ -22,6 +22,10 @@ var dummyFactory = DbProviderFactories.GetFactory(dummyName);
 Console.WriteLine(dummyFactory.ToString());
 
 
+var commandBuilder = factory.CreateCommandBuilder();
+Console.WriteLine(commandBuilder.ToString());
+
+
 class DummyFactory : DbProviderFactory
 {
     public static readonly DummyFactory Instance = new();

@@ -7,6 +7,8 @@ namespace DataAccessTracing
     {
         private readonly DbProviderFactory _innerFactory;
 
+        internal DbProviderFactory InnerFactory => _innerFactory;
+
         public TracingProviderFactory(DbProviderFactory innerFactory)
         {
             _innerFactory = innerFactory;
@@ -14,14 +16,28 @@ namespace DataAccessTracing
 
         protected TracingProviderFactory()
         {
-            _innerFactory = GetInnerFactory();
+            var t = GetInnerFactoryType();
+            var fi = t.GetField("Instance", BindingFlags.Public | BindingFlags.Static);
+            _innerFactory = (DbProviderFactory)fi.GetValue(null);
         }
 
-        protected virtual DbProviderFactory GetInnerFactory() => throw new NotImplementedException();
+        protected virtual Type GetInnerFactoryType() => throw new NotImplementedException();
 
         public override string ToString()
         {
             return base.ToString() + ", InnerFactory: " + _innerFactory.ToString();
+        }
+
+#if !NETFRAMEWORK
+        public override bool CanCreateCommandBuilder => _innerFactory.CanCreateCommandBuilder;
+#endif
+
+        public override DbCommandBuilder CreateCommandBuilder()
+        {
+            var innerBuilder = _innerFactory.CreateCommandBuilder();
+            var t = typeof(TracingCommandBuilder<>).MakeGenericType(_innerFactory.GetType());
+            var cb = (DbCommandBuilder)Activator.CreateInstance(t, innerBuilder);
+            return cb;
         }
     }
 
@@ -30,11 +46,12 @@ namespace DataAccessTracing
     {
         public static readonly TracingProviderFactory<TDbProviderFactory> Instance = new();
 
-        protected override DbProviderFactory GetInnerFactory()
+        protected override Type GetInnerFactoryType() => typeof(TDbProviderFactory);
+
+        public override DbCommandBuilder CreateCommandBuilder()
         {
-            var fi = typeof(TDbProviderFactory).GetField(nameof(Instance), BindingFlags.Public | BindingFlags.Static);
-            var factory = (DbProviderFactory)fi.GetValue(null);
-            return factory;
+            var innerBuilder = InnerFactory.CreateCommandBuilder();
+            return new TracingCommandBuilder<TDbProviderFactory>(innerBuilder);
         }
     }
 }
