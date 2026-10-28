@@ -5,7 +5,7 @@ using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
-    internal class TracingTransaction : DbTransaction
+    internal sealed class TracingTransaction : DbTransaction
     {
         private readonly DbTransaction _innerTransaction;
         private readonly TracingConnection _connection;

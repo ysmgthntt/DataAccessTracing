@@ -5,7 +5,6 @@ namespace DataAccessTracing.Diagnostics
 {
     public sealed class TransactionInfo(ConnectionInfo connectionInfo) : DbObjectInfo(DbObjectKind.Transaction)
     {
-        public Guid TransactionID { get; } = Guid.NewGuid();
         public ConnectionInfo ConnectionInfo => connectionInfo;
         public TimeSpan Duration { get; private set; }
         public IsolationLevel IsolationLevel { get; internal set; }
