@@ -3,6 +3,8 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Reflection;
 
+using DataAccessTracing.Diagnostics;
+
 namespace DataAccessTracing
 {
     public static class DataAccessTrace
@@ -87,6 +89,14 @@ namespace DataAccessTracing
                 DbProviderFactories.RegisterFactory(providerName, tracingFactory);
             }
 #endif
+        }
+
+        internal static DataAccessTraceHandler TraceHandler { get; private set; } = new();
+
+        public static void SetTraceHandler(DataAccessTraceHandler traceHandler)
+        {
+            ArgumentNullException.ThrowIfNull(traceHandler);
+            TraceHandler = traceHandler;
         }
     }
 }

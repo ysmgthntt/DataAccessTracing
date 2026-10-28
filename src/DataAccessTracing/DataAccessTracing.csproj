@@ -9,7 +9,11 @@
 
   <ItemGroup>
     <Using Remove="System.Net.Http" />
-    <Using Remove="System.Threading.Tasks" Condition="'$(TargetFramework)' == 'net35'" />
+    <Using Condition="'$(TargetFramework)' == 'net35'" Remove="System.Threading.Tasks" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <Reference Include="System.Transactions" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,165 @@
+﻿using System.ComponentModel;
+using System.Data;
+using System.Data.Common;
+using System.Transactions;
+
+using DataAccessTracing.Diagnostics;
+
+namespace DataAccessTracing
+{
+    internal sealed class TracingConnection : DbConnection
+    {
+        private readonly ConnectionInfo _info = new();
+        private readonly DbConnection _innerConnection;
+        private readonly TracingProviderFactory _factory;
+
+        public TracingConnection(DbConnection innerConnection, TracingProviderFactory factory)
+        {
+            _innerConnection = innerConnection;
+            _factory = factory;
+
+            if (innerConnection.State == ConnectionState.Open)
+                OpenConnection();
+
+            innerConnection.StateChange += InnerConnection_StateChange;
+        }
+
+        //
+
+        public override event StateChangeEventHandler StateChange
+        {
+            add => _innerConnection.StateChange += value;
+            remove => _innerConnection.StateChange -= value;
+        }
+
+        public override string ConnectionString
+        {
+            get => _innerConnection.ConnectionString;
+            set => _innerConnection.ConnectionString = value;
+        }
+
+        public override int ConnectionTimeout => _innerConnection.ConnectionTimeout;
+
+        public override string Database => _innerConnection.Database;
+
+        public override string DataSource => _innerConnection.DataSource;
+
+        public override string ServerVersion => _innerConnection.ServerVersion;
+
+        public override ISite Site
+        {
+            get => _innerConnection.Site;
+            set => _innerConnection.Site = value;
+        }
+
+        public override ConnectionState State => _innerConnection.State;
+
+        protected override DbProviderFactory DbProviderFactory => _factory;
+
+        public override void ChangeDatabase(string databaseName) => _innerConnection.ChangeDatabase(databaseName);
+
+        public override void Close() => _innerConnection.Close();
+
+        public override void Open() => _innerConnection.Open();
+
+        public override void EnlistTransaction(Transaction transaction)
+        {
+            _innerConnection.EnlistTransaction(transaction);
+            // TODO
+        }
+
+        public override DataTable GetSchema() => _innerConnection.GetSchema();
+
+        public override DataTable GetSchema(string collectionName) => _innerConnection.GetSchema(collectionName);
+
+        public override DataTable GetSchema(string collectionName, string[] restrictionValues) => _innerConnection.GetSchema(collectionName, restrictionValues);
+
+        protected override DbTransaction BeginDbTransaction(System.Data.IsolationLevel isolationLevel)
+        {
+            // TODO
+            return _innerConnection.BeginTransaction(isolationLevel);
+        }
+
+        protected override DbCommand CreateDbCommand()
+        {
+            var innerCommand = _innerConnection.CreateCommand();
+            // TODO
+            /*return*/
+            new TracingCommand(innerCommand, this);
+            return innerCommand;
+        }
+
+        protected override object GetService(Type service) => ((IServiceProvider)_innerConnection).GetService(service);
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _innerConnection.Dispose();
+                _innerConnection.StateChange -= InnerConnection_StateChange;
+                // dispose check
+                GC.SuppressFinalize(this);
+            }
+
+            base.Dispose(disposing);
+
+            if (!_info.IsUsed)
+                DataAccessTrace.TraceHandler.OnUnused(_info);
+        }
+
+#if !NET35
+        public override Task OpenAsync(CancellationToken cancellationToken) => _innerConnection.OpenAsync(cancellationToken);
+
+        public override Task CloseAsync() => _innerConnection.CloseAsync();
+
+        protected override ValueTask<DbTransaction> BeginDbTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken)
+            => _innerConnection.BeginTransactionAsync(isolationLevel, cancellationToken);
+
+        public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default)
+            => _innerConnection.ChangeDatabaseAsync(databaseName, cancellationToken);
+
+        public override async ValueTask DisposeAsync()
+        {
+            await _innerConnection.DisposeAsync().ConfigureAwait(false);
+            _innerConnection.StateChange -= InnerConnection_StateChange;
+            // dispose check
+            GC.SuppressFinalize(this);
+            if (!_info.IsUsed)
+                DataAccessTrace.TraceHandler.OnUnused(_info);
+        }
+#endif
+
+        //
+
+        private void InnerConnection_StateChange(object sender, StateChangeEventArgs e)
+        {
+            if (e.CurrentState == ConnectionState.Open)
+                OpenConnection();
+            else if (e.CurrentState == ConnectionState.Closed)
+                CloseConnection();
+        }
+
+        private void OpenConnection()
+        {
+            _info.Open();
+            DataAccessTrace.TraceHandler.OnConnectionOpened(_info);
+            _info.Start();
+        }
+
+        private void CloseConnection()
+        {
+            _info.Close();
+            DataAccessTrace.TraceHandler.OnConnectionClosed(_info);
+        }
+
+        // dispose check
+        ~TracingConnection()
+        {
+            try
+            {
+                DataAccessTrace.TraceHandler.OnDisposeLeakDetected(_info);
+            }
+            catch { }
+        }
+    }
+}

@@ -4,6 +4,11 @@ namespace DataAccessTracing
 {
     internal class TracingCommand
     {
-        internal DbCommand InnerCommand => null!;
+        internal DbCommand InnerCommand;
+
+        public TracingCommand(DbCommand innerCommand, TracingConnection connection)
+        {
+            InnerCommand = innerCommand;
+        }
     }
 }
