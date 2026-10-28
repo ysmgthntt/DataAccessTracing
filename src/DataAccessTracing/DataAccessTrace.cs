@@ -7,7 +7,7 @@ namespace DataAccessTracing
 {
     public static class DataAccessTrace
     {
-        public static void ReplaceDbProviderFactoriesToTracingProvider()
+        public static void ReplaceDbProviderFactoriesWithTracingProviders()
         {
 #if NETFRAMEWORK
             // Force Creation
