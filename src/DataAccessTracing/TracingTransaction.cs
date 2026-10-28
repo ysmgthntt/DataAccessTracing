@@ -48,14 +48,13 @@ namespace DataAccessTracing
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
                 _innerTransaction.Dispose();
-                // dispose check
-                GC.SuppressFinalize(this);
-            }
 
             base.Dispose(disposing);
 
+            // dispose check
+            if (disposing)
+                GC.SuppressFinalize(this);
             if (!_info.IsUsed)
                 DataAccessTrace.TraceHandler.OnUnused(_info);
         }
@@ -80,9 +79,9 @@ namespace DataAccessTracing
         public override async ValueTask DisposeAsync()
         {
             await _innerTransaction.DisposeAsync().ConfigureAwait(false);
+            base.Dispose(true);
             // dispose check
             GC.SuppressFinalize(this);
-            base.Dispose(true);
             if (!_info.IsUsed)
                 DataAccessTrace.TraceHandler.OnUnused(_info);
         }

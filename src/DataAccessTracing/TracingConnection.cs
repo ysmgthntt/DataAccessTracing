@@ -100,12 +100,13 @@ namespace DataAccessTracing
             {
                 _innerConnection.Dispose();
                 _innerConnection.StateChange -= InnerConnection_StateChange;
-                // dispose check
-                GC.SuppressFinalize(this);
             }
 
             base.Dispose(disposing);
 
+            // dispose check
+            if (disposing)
+                GC.SuppressFinalize(this);
             if (!_info.IsUsed)
                 DataAccessTrace.TraceHandler.OnUnused(_info);
         }
@@ -129,9 +130,9 @@ namespace DataAccessTracing
         {
             await _innerConnection.DisposeAsync().ConfigureAwait(false);
             _innerConnection.StateChange -= InnerConnection_StateChange;
+            base.Dispose(true);
             // dispose check
             GC.SuppressFinalize(this);
-            base.Dispose(true);
             if (!_info.IsUsed)
                 DataAccessTrace.TraceHandler.OnUnused(_info);
         }
