@@ -14,6 +14,21 @@ namespace DataAccessTracing.Diagnostics
             Trace.WriteLine($"Connection Closed ID: {info.ConnectionID}, Duration: {info.Duration}");
         }
 
+        protected internal virtual void OnBeginTransaction(TransactionInfo info)
+        {
+            Trace.WriteLine($"Begin Transaction ID: {info.TransactionID}, ConnectionID: {info.ConnectionInfo.ConnectionID}");
+        }
+
+        protected internal virtual void OnCommitTransaction(TransactionInfo info)
+        {
+            Trace.WriteLine($"Commit Transaction ID: {info.TransactionID}, ConnectionID: {info.ConnectionInfo.ConnectionID}, Duration: {info.Duration}");
+        }
+
+        protected internal virtual void OnRollbackTransaction(TransactionInfo info)
+        {
+            Trace.WriteLine($"Rollback Transaction ID: {info.TransactionID}, ConnectionID: {info.ConnectionInfo.ConnectionID}, Duration: {info.Duration}");
+        }
+
         protected internal virtual void OnUnused(DbObjectInfo info)
         {
             Trace.WriteLine($"Unused {info.Kind} ID: {info.ID}");

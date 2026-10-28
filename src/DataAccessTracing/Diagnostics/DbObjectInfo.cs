@@ -15,7 +15,7 @@ namespace DataAccessTracing.Diagnostics
             ID = Guid.NewGuid();
             Kind = kind;
 
-            StackTrace trace = new StackTrace();
+            var trace = new StackTrace();
             for (int index = 4; index < trace.FrameCount; index++)
             {
                 var method = trace.GetFrame(index).GetMethod();
@@ -28,8 +28,6 @@ namespace DataAccessTracing.Diagnostics
                     break;
                 }
             }
-
-            Kind = kind;
         }
 
         private bool _used;

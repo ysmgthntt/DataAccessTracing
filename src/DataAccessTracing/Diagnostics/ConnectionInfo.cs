@@ -14,6 +14,7 @@ namespace DataAccessTracing.Diagnostics
         internal void Open()
         {
             ConnectionID = Guid.NewGuid();
+            Duration = TimeSpan.Zero;
         }
 
         internal void Start()

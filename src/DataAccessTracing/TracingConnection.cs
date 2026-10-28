@@ -9,9 +9,12 @@ namespace DataAccessTracing
 {
     internal sealed class TracingConnection : DbConnection
     {
-        private readonly ConnectionInfo _info = new();
         private readonly DbConnection _innerConnection;
         private readonly TracingProviderFactory _factory;
+
+        private readonly ConnectionInfo _info = new();
+
+        internal ConnectionInfo Info => _info;
 
         public TracingConnection(DbConnection innerConnection, TracingProviderFactory factory)
         {
@@ -76,8 +79,8 @@ namespace DataAccessTracing
 
         protected override DbTransaction BeginDbTransaction(System.Data.IsolationLevel isolationLevel)
         {
-            // TODO
-            return _innerConnection.BeginTransaction(isolationLevel);
+            var innerTransaction = _innerConnection.BeginTransaction(isolationLevel);
+            return new TracingTransaction(innerTransaction, this);
         }
 
         protected override DbCommand CreateDbCommand()
@@ -110,10 +113,14 @@ namespace DataAccessTracing
 #if !NET35
         public override Task OpenAsync(CancellationToken cancellationToken) => _innerConnection.OpenAsync(cancellationToken);
 
+#if !NETFRAMEWORK
         public override Task CloseAsync() => _innerConnection.CloseAsync();
 
-        protected override ValueTask<DbTransaction> BeginDbTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken)
-            => _innerConnection.BeginTransactionAsync(isolationLevel, cancellationToken);
+        protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken)
+        {
+            var innerTransaction = await _innerConnection.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
+            return new TracingTransaction(innerTransaction, this);
+        }
 
         public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default)
             => _innerConnection.ChangeDatabaseAsync(databaseName, cancellationToken);
@@ -124,9 +131,11 @@ namespace DataAccessTracing
             _innerConnection.StateChange -= InnerConnection_StateChange;
             // dispose check
             GC.SuppressFinalize(this);
+            base.Dispose(true);
             if (!_info.IsUsed)
                 DataAccessTrace.TraceHandler.OnUnused(_info);
         }
+#endif
 #endif
 
         //
