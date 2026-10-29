@@ -31,8 +31,9 @@ namespace DataAccessTracing.Diagnostics
 
         protected internal override void OnCommandExecuting(CommandExecutionInfo info)
         {
-            string caller = info.CallerMethod is null ? "" : $"{Environment.NewLine}Caller: {GetFullMethodName(info.CallerMethod)}";
-            Trace.WriteLine($"[{info.MethodName}]{Environment.NewLine}{info.GetParameterExpandedCommandText()}{caller}");
+            var nl = Environment.NewLine;
+            string caller = info.CallerMethod is null ? "" : $"Caller: {GetFullMethodName(info.CallerMethod)}, ";
+            Trace.WriteLine($"[{info.MethodName}]{nl}{info.GetParameterExpandedCommandText()}{nl}{caller}Execution ID: {info.ExecutionID}");
         }
 
         protected internal override void OnCommandExecuted(CommandExecutionInfo info)
@@ -46,7 +47,7 @@ namespace DataAccessTracing.Diagnostics
 
         protected internal override void OnDataReaderClosed(DataReaderInfo info)
         {
-            Trace.WriteLine($"RowCount: {info.RowCount}");
+            Trace.WriteLine($"RowCount: {info.RowCount}, Execution ID: {info.ExecutionID}");
         }
 
         //
