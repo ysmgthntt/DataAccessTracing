@@ -281,6 +281,7 @@ namespace DataAccessTracing
         {
             _info.Used();
             _connection?.Info.Used();
+            _transaction?.Info.Used();
         }
 
         // dispose check

@@ -11,6 +11,8 @@ namespace DataAccessTracing
         private readonly TracingConnection _connection;
         private readonly TransactionInfo _info;
 
+        internal TransactionInfo Info => _info;
+
         public TracingTransaction(DbTransaction innerTransaction, TracingConnection connnection)
         {
             _innerTransaction = innerTransaction;
