@@ -3,10 +3,10 @@ using System.Data;
 using System.Data.Common;
 using System.Transactions;
 
-using DataAccessTracing.Diagnostics;
-
 namespace DataAccessTracing
 {
+    using Diagnostics;
+
     internal sealed class TracingConnection : DbConnection
     {
         private readonly DbConnection _innerConnection;
@@ -26,6 +26,8 @@ namespace DataAccessTracing
 
             innerConnection.StateChange += InnerConnection_StateChange;
         }
+
+        internal DbConnection InnerConnection => _innerConnection;
 
         //
 
@@ -86,10 +88,7 @@ namespace DataAccessTracing
         protected override DbCommand CreateDbCommand()
         {
             var innerCommand = _innerConnection.CreateCommand();
-            // TODO
-            /*return*/
-            new TracingCommand(innerCommand, this);
-            return innerCommand;
+            return new TracingCommand(innerCommand, this);
         }
 
         protected override object GetService(Type service) => ((IServiceProvider)_innerConnection).GetService(service);

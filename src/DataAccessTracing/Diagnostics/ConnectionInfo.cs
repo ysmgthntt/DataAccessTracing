@@ -5,16 +5,15 @@ namespace DataAccessTracing.Diagnostics
     public sealed class ConnectionInfo : DbObjectInfo
     {
         public Guid ConnectionID { get; private set; }
-        public TimeSpan Duration { get; private set; }
+        public TimeSpan Duration => _sw.Elapsed;
 
         private readonly Stopwatch _sw = new();
 
-        public ConnectionInfo() : base(DbObjectKind.Connection) { }
+        internal ConnectionInfo() : base(DbObjectKind.Connection) { }
 
         internal void Open()
         {
             ConnectionID = Guid.NewGuid();
-            Duration = TimeSpan.Zero;
         }
 
         internal void Start()
@@ -27,10 +26,6 @@ namespace DataAccessTracing.Diagnostics
 #endif
         }
 
-        internal void Close()
-        {
-            _sw.Stop();
-            Duration = _sw.Elapsed;
-        }
+        internal void Close() => _sw.Stop();
     }
 }

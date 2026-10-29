@@ -1,10 +1,10 @@
 ﻿using System.Data;
 using System.Data.Common;
 
-using DataAccessTracing.Diagnostics;
-
 namespace DataAccessTracing
 {
+    using Diagnostics;
+
     internal sealed class TracingTransaction : DbTransaction
     {
         private readonly DbTransaction _innerTransaction;
@@ -24,6 +24,8 @@ namespace DataAccessTracing
             DataAccessTrace.TraceHandler.OnBeginTransaction(_info);
             _info.Begin();
         }
+
+        internal DbTransaction InnerTransaction => _innerTransaction;
 
         //
 

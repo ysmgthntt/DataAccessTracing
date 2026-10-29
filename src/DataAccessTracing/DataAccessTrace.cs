@@ -3,10 +3,10 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Reflection;
 
-using DataAccessTracing.Diagnostics;
-
 namespace DataAccessTracing
 {
+    using Diagnostics;
+
     public static class DataAccessTrace
     {
         public static void ReplaceDbProviderFactoriesWithTracingProviders()
@@ -91,12 +91,35 @@ namespace DataAccessTracing
 #endif
         }
 
-        internal static DataAccessTraceHandler TraceHandler { get; private set; } = new();
+        internal static DataAccessTraceHandler TraceHandler
+        {
+            get => field ??= new DefaultDataAccessTraceHandler();
+            private set;
+        }
 
         public static void SetTraceHandler(DataAccessTraceHandler traceHandler)
         {
             ArgumentNullException.ThrowIfNull(traceHandler);
             TraceHandler = traceHandler;
+        }
+
+        public static bool ParameterValidationEnabled { get; set; }
+
+        internal static MethodBase? GetCallerMethod(int startFrameCount)
+        {
+            var trace = new StackTrace();
+            for (int index = startFrameCount; index < trace.FrameCount; index++)
+            {
+                var method = trace.GetFrame(index).GetMethod();
+                var typeName = method.DeclaringType.FullName;
+                if (!typeName.StartsWith("DataAccessTracing.", StringComparison.Ordinal) &&
+                    !typeName.StartsWith("System.", StringComparison.Ordinal) &&
+                    !typeName.StartsWith("Microsoft.", StringComparison.Ordinal))
+                {
+                    return method;
+                }
+            }
+            return null;
         }
     }
 }
