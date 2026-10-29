@@ -36,11 +36,15 @@ namespace DataAccessTracing.Diagnostics
         {
         }
 
-        protected internal virtual void OnUnused(DbObjectInfo info)
+        protected internal virtual void OnUnusedObjectDetected(DbObjectInfo info)
         {
         }
 
         protected internal virtual void OnDisposeLeakDetected(DbObjectInfo info)
+        {
+        }
+
+        protected internal virtual void OnInvalidParameterDetected(InvalidParameterDetails details)
         {
         }
 

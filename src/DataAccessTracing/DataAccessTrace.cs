@@ -103,7 +103,7 @@ namespace DataAccessTracing
             TraceHandler = traceHandler;
         }
 
-        public static bool ParameterValidationEnabled { get; set; }
+        public static bool IsParameterValidationEnabled { get; set; }
 
         internal static MethodBase? GetCallerMethod(int startFrameCount)
         {

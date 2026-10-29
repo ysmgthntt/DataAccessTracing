@@ -44,6 +44,7 @@ namespace DataAccessTracing.Diagnostics
         private List<ParameterInfo>? _parameters;
 
         public IEnumerable<ParameterInfo> GetParameters()
+            // 代入はしない。
             => _parameters ?? EnumerateParameters();
 
         private IEnumerable<ParameterInfo> EnumerateParameters()
@@ -56,12 +57,28 @@ namespace DataAccessTracing.Diagnostics
 
         internal void Begin()
         {
-            if (DataAccessTrace.ParameterValidationEnabled)
+            if (DataAccessTrace.IsParameterValidationEnabled)
             {
+                // throw されると _command は null になるため、 _expandedCommandText, _parameters を作成しておく。
                 if (_expandedCommandText is null)
                     GetParameterExpandedCommandText();
-                _command = null;
-                // TODO: Check
+
+                if (_missingParametersInCommandText is not null)
+                {
+                    var details = new InvalidParameterDetails(this, _missingParametersInCommandText.ToArray(), InvalidParameterReason.MissingInCommandText);
+                    DataAccessTrace.TraceHandler.OnInvalidParameterDetected(details);
+                }
+
+                var duplicates = GetParameters()
+                    .GroupBy(p => p.ParameterName)
+                    .Where(g => g.Count() > 1)
+                    ;
+                if (duplicates.Any())
+                {
+                    var duplicatedParams = duplicates.SelectMany(g => g);
+                    var details = new InvalidParameterDetails(this, duplicatedParams.ToArray(), InvalidParameterReason.DuplicateParameterName);
+                    DataAccessTrace.TraceHandler.OnInvalidParameterDetected(details);
+                }
             }
 
             _sw.Start();
@@ -69,7 +86,7 @@ namespace DataAccessTracing.Diagnostics
 
         internal void End() => _sw.Stop();
 
-        private List<ParameterInfo>? _notContainedParametersInCommandText;
+        private List<ParameterInfo>? _missingParametersInCommandText;
 
         private string ExpandCommandText()
         {
@@ -84,7 +101,7 @@ namespace DataAccessTracing.Diagnostics
             {
                 if (IndexOf(sb, parameter.ParameterName) < 0)
                 {
-                    (_notContainedParametersInCommandText ??= new()).Add(parameter);
+                    (_missingParametersInCommandText ??= new()).Add(parameter);
                     continue;
                 }
 

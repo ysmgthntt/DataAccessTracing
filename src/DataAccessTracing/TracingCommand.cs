@@ -98,6 +98,10 @@ namespace DataAccessTracing
             {
                 _transaction = value as TracingTransaction;
                 _innerCommand.Transaction = _transaction?.InnerTransaction;
+
+                // MEMO:
+                // Glimpse ではここで TracingTransaction 以外の場合、 value をそのまま _innerCommand.Transaction に入れている。
+                // TracingTransaction 以外がわたってくることはあるのか？
             }
         }
 
@@ -254,7 +258,7 @@ namespace DataAccessTracing
             // dispose check
             GC.SuppressFinalize(this);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnused(_info);
+                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 #endif
 #endif
@@ -270,7 +274,7 @@ namespace DataAccessTracing
             if (disposing)
                 GC.SuppressFinalize(this);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnused(_info);
+                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 
         //

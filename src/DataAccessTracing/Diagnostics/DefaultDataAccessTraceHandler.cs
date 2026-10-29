@@ -32,7 +32,7 @@ namespace DataAccessTracing.Diagnostics
         protected internal override void OnCommandExecuting(CommandExecutionInfo info)
         {
             string caller = info.CallerMethod is null ? "" : $"{Environment.NewLine}Caller: {GetFullMethodName(info.CallerMethod)}";
-            Trace.WriteLine($"[{info.MethodName}]{Environment.NewLine}sql{caller}");
+            Trace.WriteLine($"[{info.MethodName}]{Environment.NewLine}{info.GetParameterExpandedCommandText()}{caller}");
         }
 
         protected internal override void OnCommandExecuted(CommandExecutionInfo info)
@@ -44,14 +44,20 @@ namespace DataAccessTracing.Diagnostics
         {
         }
 
-        protected internal override void OnUnused(DbObjectInfo info)
+        protected internal override void OnUnusedObjectDetected(DbObjectInfo info)
         {
-            Trace.WriteLine($"Unused {info.Kind} ID: {info.ID}");
+            Trace.WriteLine($"Unused object detected {info.Kind} ID: {info.ID}, Creation Method: {GetFullMethodName(info.CreationMethod)}");
         }
 
         protected internal override void OnDisposeLeakDetected(DbObjectInfo info)
         {
-            Trace.WriteLine($"DisposeLeakDetected {info.Kind} ID: {info.ID}");
+            Trace.WriteLine($"Dispose leak detected {info.Kind} ID: {info.ID}, Creation Method: {GetFullMethodName(info.CreationMethod)}");
+        }
+
+        protected internal override void OnInvalidParameterDetected(InvalidParameterDetails details)
+        {
+            Trace.WriteLine($"Invalid parameter detected: {details.Reason}");
+            throw new InvalidParameterException(details);
         }
     }
 }

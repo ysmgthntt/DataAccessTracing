@@ -60,7 +60,7 @@ namespace DataAccessTracing
             if (disposing)
                 GC.SuppressFinalize(this);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnused(_info);
+                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 
         //
@@ -87,7 +87,7 @@ namespace DataAccessTracing
             // dispose check
             GC.SuppressFinalize(this);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnused(_info);
+                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 #endif
 
