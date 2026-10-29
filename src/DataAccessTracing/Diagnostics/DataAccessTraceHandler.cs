@@ -36,6 +36,12 @@ namespace DataAccessTracing.Diagnostics
         {
         }
 
+        protected internal virtual void OnDataReaderClosed(DataReaderInfo info)
+        {
+        }
+
+        //
+
         protected internal virtual void OnUnusedObjectDetected(DbObjectInfo info)
         {
         }

@@ -9,8 +9,10 @@ namespace DataAccessTracing.Diagnostics
 {
     public sealed class CommandExecutionInfo : IDisposable
     {
-        public Guid CommandID { get; }
+        public Guid ExecutionID { get; }
         public CommandInfo CommandInfo { get; }
+        public ConnectionInfo? ConnectionInfo { get; }
+        public TransactionInfo? TransactionInfo { get; }
         public string MethodName { get; }
         public MethodBase? CallerMethod { get; }
 
@@ -24,10 +26,12 @@ namespace DataAccessTracing.Diagnostics
 
         private readonly Stopwatch _sw = new();
 
-        internal CommandExecutionInfo(CommandInfo info, TracingCommand command, [CallerMemberName] string methodName = "")
+        internal CommandExecutionInfo(CommandInfo info, ConnectionInfo? connectionInfo, TransactionInfo? transactionInfo, TracingCommand command, [CallerMemberName] string methodName = "")
         {
-            CommandID = Guid.NewGuid();
+            ExecutionID = Guid.NewGuid();
             CommandInfo = info;
+            ConnectionInfo = connectionInfo;
+            TransactionInfo = transactionInfo;
             MethodName = methodName;
             CallerMethod = DataAccessTrace.GetCallerMethod(5);
 

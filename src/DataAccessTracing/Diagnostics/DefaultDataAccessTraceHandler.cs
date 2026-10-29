@@ -44,6 +44,13 @@ namespace DataAccessTracing.Diagnostics
         {
         }
 
+        protected internal override void OnDataReaderClosed(DataReaderInfo info)
+        {
+            Trace.WriteLine($"RowCount: {info.RowCount}");
+        }
+
+        //
+
         protected internal override void OnUnusedObjectDetected(DbObjectInfo info)
         {
             Trace.WriteLine($"Unused object detected {info.Kind} ID: {info.ID}, Creation Method: {GetFullMethodName(info.CreationMethod)}");
