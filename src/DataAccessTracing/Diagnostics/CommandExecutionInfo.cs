@@ -16,17 +16,20 @@ namespace DataAccessTracing.Diagnostics
         public string MethodName { get; }
         public MethodBase? CallerMethod { get; }
 
+        public string CommandText { get; }
+        public CommandType CommandType { get; }
+
         public TimeSpan Duration => _sw.Elapsed;
         public int RecordsAffected { get; internal set; }
         public Exception? Exception { get; internal set; }
 
-        private TracingCommand? _command;
-        public CommandType CommandType { get; }
-        public string CommandText { get; }
+        private IDataParameterCollection? _parameterCollection;
 
         private readonly Stopwatch _sw = new();
 
-        internal CommandExecutionInfo(CommandInfo info, ConnectionInfo? connectionInfo, TransactionInfo? transactionInfo, TracingCommand command, [CallerMemberName] string methodName = "")
+        internal CommandExecutionInfo(CommandInfo info, ConnectionInfo? connectionInfo, TransactionInfo? transactionInfo,
+            string commandText, CommandType commandType, IDataParameterCollection parameterCollection,
+            [CallerMemberName] string methodName = "")
         {
             ExecutionId = Guid.NewGuid();
             CommandInfo = info;
@@ -35,9 +38,9 @@ namespace DataAccessTracing.Diagnostics
             MethodName = methodName;
             CallerMethod = DataAccessTrace.GetCallerMethod(5);
 
-            _command = command;
-            CommandType = command.CommandType;
-            CommandText = command.CommandText;
+            CommandText = commandText;
+            CommandType = commandType;
+            _parameterCollection = parameterCollection;
         }
 
         private string? _expandedCommandText;
@@ -53,9 +56,9 @@ namespace DataAccessTracing.Diagnostics
 
         private IEnumerable<ParameterInfo> EnumerateParameters()
         {
-            if (_command is null)
+            if (_parameterCollection is null)
                 yield break;
-            foreach (DbParameter parameter in _command.Parameters)
+            foreach (DbParameter parameter in _parameterCollection)
                 yield return new ParameterInfo(parameter.ParameterName, parameter.Value, parameter.DbType, parameter.Direction);
         }
 
@@ -63,7 +66,7 @@ namespace DataAccessTracing.Diagnostics
         {
             if (DataAccessTrace.IsParameterValidationEnabled)
             {
-                // throw されると _command は null になるため、 _expandedCommandText, _parameters を作成しておく。
+                // throw されると _parameterCollection は null になるため、 _expandedCommandText, _parameters を作成しておく。
                 if (_expandedCommandText is null)
                     GetParameterExpandedCommandText();
 
@@ -178,7 +181,7 @@ namespace DataAccessTracing.Diagnostics
 
         void IDisposable.Dispose()
         {
-            _command = null;
+            _parameterCollection = null;
             Exception = null;
         }
     }

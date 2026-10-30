@@ -114,7 +114,7 @@ namespace DataAccessTracing
         public override int ExecuteNonQuery()
         {
             Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, this);
+            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
             DataAccessTrace.TraceHandler.OnCommandExecuting(info);
             info.Begin();
             int recordsAffected;
@@ -137,7 +137,7 @@ namespace DataAccessTracing
         public override object ExecuteScalar()
         {
             Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, this);
+            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
             DataAccessTrace.TraceHandler.OnCommandExecuting(info);
             info.Begin();
             object result;
@@ -159,7 +159,7 @@ namespace DataAccessTracing
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
             Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, this);
+            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
             DataAccessTrace.TraceHandler.OnCommandExecuting(info);
             info.Begin();
             DbDataReader innerReader;
@@ -182,7 +182,7 @@ namespace DataAccessTracing
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
             Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, this);
+            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
             DataAccessTrace.TraceHandler.OnCommandExecuting(info);
             info.Begin();
             int recordsAffected;
@@ -205,7 +205,7 @@ namespace DataAccessTracing
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
             Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, this);
+            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
             DataAccessTrace.TraceHandler.OnCommandExecuting(info);
             info.Begin();
             object result;
@@ -227,7 +227,7 @@ namespace DataAccessTracing
         protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
             Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, this);
+            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
             DataAccessTrace.TraceHandler.OnCommandExecuting(info);
             info.Begin();
             DbDataReader innerReader;
