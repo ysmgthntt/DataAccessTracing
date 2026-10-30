@@ -17,11 +17,13 @@ namespace DataAccessTracing
         {
             _innerTransaction = innerTransaction;
             _connection = connnection;
-            _info = new TransactionInfo(connnection.Info);
 
             // OracleTransaction の IsolationLevel を取得すると NullReferenceException が発生する。
-            if (_innerTransaction.GetType().FullName != "System.Data.OracleClient.OracleTransaction")
-                _info.IsolationLevel = _innerTransaction.IsolationLevel;
+            IsolationLevel isolationLevel
+                = _innerTransaction.GetType().FullName == "System.Data.OracleClient.OracleTransaction" ? IsolationLevel.ReadCommitted
+                : _innerTransaction.IsolationLevel;
+
+            _info = new TransactionInfo(connnection.Info, isolationLevel);
 
             DataAccessTrace.TraceHandler.OnBeginTransaction(_info);
             _info.Begin();
