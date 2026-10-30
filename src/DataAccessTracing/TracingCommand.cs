@@ -175,7 +175,7 @@ namespace DataAccessTracing
             }
             info.End();
             DataAccessTrace.TraceHandler.OnCommandExecuted(info);
-            return new TracingDataReader(innerReader, info.ExecutionID, behavior, _connection);
+            return new TracingDataReader(innerReader, info.ExecutionId, behavior, _connection);
         }
 
 #if !NET35
@@ -243,7 +243,7 @@ namespace DataAccessTracing
             }
             info.End();
             DataAccessTrace.TraceHandler.OnCommandExecuted(info);
-            return new TracingDataReader(innerReader, info.ExecutionID, behavior, _connection);
+            return new TracingDataReader(innerReader, info.ExecutionId, behavior, _connection);
         }
 
 #if !NETFRAMEWORK

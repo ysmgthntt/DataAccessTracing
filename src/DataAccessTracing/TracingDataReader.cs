@@ -14,10 +14,10 @@ namespace DataAccessTracing
         private readonly CommandBehavior _behavior;
         private readonly TracingConnection? _connection;
 
-        internal TracingDataReader(DbDataReader innerReader, Guid executionID, CommandBehavior behavior, TracingConnection? connection)
+        internal TracingDataReader(DbDataReader innerReader, Guid executionId, CommandBehavior behavior, TracingConnection? connection)
         {
             _innerReader = innerReader;
-            _info = new DataReaderInfo(executionID);
+            _info = new DataReaderInfo(executionId);
             // dispose check
             _behavior = behavior;
             _connection = connection;

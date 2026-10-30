@@ -4,7 +4,7 @@ namespace DataAccessTracing.Diagnostics
 {
     public sealed class ConnectionInfo : DbObjectInfo
     {
-        public Guid ConnectionID { get; private set; }
+        public Guid ConnectionId { get; private set; }
         public TimeSpan Duration => _sw.Elapsed;
 
         private readonly Stopwatch _sw = new();
@@ -13,7 +13,7 @@ namespace DataAccessTracing.Diagnostics
 
         internal void Open()
         {
-            ConnectionID = Guid.NewGuid();
+            ConnectionId = Guid.NewGuid();
         }
 
         internal void Start()

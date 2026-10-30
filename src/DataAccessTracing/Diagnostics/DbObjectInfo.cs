@@ -5,14 +5,14 @@ namespace DataAccessTracing.Diagnostics
 {
     public abstract class DbObjectInfo
     {
-        public Guid ID { get; }
+        public Guid Id { get; }
         public DbObjectKind Kind { get; }
 
         public MethodBase? CreationMethod { get; }
 
         internal DbObjectInfo(DbObjectKind kind)
         {
-            ID = Guid.NewGuid();
+            Id = Guid.NewGuid();
             Kind = kind;
             CreationMethod = DataAccessTrace.GetCallerMethod(5);
         }

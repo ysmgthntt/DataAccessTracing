@@ -6,39 +6,39 @@ namespace DataAccessTracing.Diagnostics
     {
         protected internal override void OnConnectionOpened(ConnectionInfo info)
         {
-            Trace.WriteLine($"Connection Opened ID: {info.ConnectionID}");
+            Trace.WriteLine($"Connection Opened Id: {info.ConnectionId}");
         }
 
         protected internal override void OnConnectionClosed(ConnectionInfo info)
         {
-            Trace.WriteLine($"Connection Closed ID: {info.ConnectionID}, Duration: {info.Duration}");
+            Trace.WriteLine($"Connection Closed Id: {info.ConnectionId}, Duration: {info.Duration}");
         }
 
         protected internal override void OnBeginTransaction(TransactionInfo info)
         {
-            Trace.WriteLine($"Begin Transaction ID: {info.ID}, ConnectionID: {info.ConnectionInfo.ConnectionID}");
+            Trace.WriteLine($"Begin Transaction Id: {info.Id}, Connection Id: {info.ConnectionInfo.ConnectionId}");
         }
 
         protected internal override void OnCommitTransaction(TransactionInfo info)
         {
-            Trace.WriteLine($"Commit Transaction ID: {info.ID}, ConnectionID: {info.ConnectionInfo.ConnectionID}, Duration: {info.Duration}");
+            Trace.WriteLine($"Commit Transaction Id: {info.Id}, Connection Id: {info.ConnectionInfo.ConnectionId}, Duration: {info.Duration}");
         }
 
         protected internal override void OnRollbackTransaction(TransactionInfo info)
         {
-            Trace.WriteLine($"Rollback Transaction ID: {info.ID}, ConnectionID: {info.ConnectionInfo.ConnectionID}, Duration: {info.Duration}");
+            Trace.WriteLine($"Rollback Transaction Id: {info.Id}, Connection Id: {info.ConnectionInfo.ConnectionId}, Duration: {info.Duration}");
         }
 
         protected internal override void OnCommandExecuting(CommandExecutionInfo info)
         {
             var nl = Environment.NewLine;
             string caller = info.CallerMethod is null ? "" : $"Caller: {GetFullMethodName(info.CallerMethod)}, ";
-            Trace.WriteLine($"[{info.MethodName}]{nl}{info.GetParameterExpandedCommandText()}{nl}{caller}Execution ID: {info.ExecutionID}");
+            Trace.WriteLine($"[{info.MethodName}]{nl}{info.GetParameterExpandedCommandText()}{nl}{caller}Execution Id: {info.ExecutionId}");
         }
 
         protected internal override void OnCommandExecuted(CommandExecutionInfo info)
         {
-            Trace.WriteLine($"Command Executed: {info.MethodName}, Duration: {info.Duration}, RecordsAffected: {info.RecordsAffected}");
+            Trace.WriteLine($"Command Executed: {info.MethodName}, Duration: {info.Duration}, RecordsAffected: {info.RecordsAffected}, Execution Id: {info.ExecutionId}");
         }
 
         protected internal override void OnCommandException(CommandExecutionInfo info)
@@ -47,19 +47,19 @@ namespace DataAccessTracing.Diagnostics
 
         protected internal override void OnDataReaderClosed(DataReaderInfo info)
         {
-            Trace.WriteLine($"RowCount: {info.RowCount}, Execution ID: {info.ExecutionID}");
+            Trace.WriteLine($"RowCount: {info.RowCount}, Execution Id: {info.ExecutionId}");
         }
 
         //
 
         protected internal override void OnUnusedObjectDetected(DbObjectInfo info)
         {
-            Trace.WriteLine($"Unused object detected {info.Kind} ID: {info.ID}, Creation Method: {GetFullMethodName(info.CreationMethod)}");
+            Trace.WriteLine($"Unused object detected {info.Kind} Id: {info.Id}, Creation Method: {GetFullMethodName(info.CreationMethod)}");
         }
 
         protected internal override void OnDisposeLeakDetected(DbObjectInfo info)
         {
-            Trace.WriteLine($"Dispose leak detected {info.Kind} ID: {info.ID}, Creation Method: {GetFullMethodName(info.CreationMethod)}");
+            Trace.WriteLine($"Dispose leak detected {info.Kind} Id: {info.Id}, Creation Method: {GetFullMethodName(info.CreationMethod)}");
         }
 
         protected internal override void OnInvalidParameterDetected(InvalidParameterDetails details)

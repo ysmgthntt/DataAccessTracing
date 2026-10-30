@@ -9,7 +9,7 @@ namespace DataAccessTracing.Diagnostics
 {
     public sealed class CommandExecutionInfo : IDisposable
     {
-        public Guid ExecutionID { get; }
+        public Guid ExecutionId { get; }
         public CommandInfo CommandInfo { get; }
         public ConnectionInfo? ConnectionInfo { get; }
         public TransactionInfo? TransactionInfo { get; }
@@ -28,7 +28,7 @@ namespace DataAccessTracing.Diagnostics
 
         internal CommandExecutionInfo(CommandInfo info, ConnectionInfo? connectionInfo, TransactionInfo? transactionInfo, TracingCommand command, [CallerMemberName] string methodName = "")
         {
-            ExecutionID = Guid.NewGuid();
+            ExecutionId = Guid.NewGuid();
             CommandInfo = info;
             ConnectionInfo = connectionInfo;
             TransactionInfo = transactionInfo;

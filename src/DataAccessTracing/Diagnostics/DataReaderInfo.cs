@@ -2,12 +2,12 @@
 {
     public sealed class DataReaderInfo : DbObjectInfo
     {
-        public Guid ExecutionID { get; }
+        public Guid ExecutionId { get; }
         public int RowCount { get; internal set; }
 
-        internal DataReaderInfo(Guid executionID) : base(DbObjectKind.DataReader)
+        internal DataReaderInfo(Guid executionId) : base(DbObjectKind.DataReader)
         {
-            ExecutionID = executionID;
+            ExecutionId = executionId;
         }
     }
 }
