@@ -91,11 +91,7 @@ namespace DataAccessTracing
 #endif
         }
 
-        internal static DataAccessTraceHandler TraceHandler
-        {
-            get => field ??= new DefaultDataAccessTraceHandler();
-            private set;
-        }
+        internal static DataAccessTraceHandler TraceHandler { get; private set; } = new DefaultDataAccessTraceHandler();
 
         public static void SetTraceHandler(DataAccessTraceHandler traceHandler)
         {
