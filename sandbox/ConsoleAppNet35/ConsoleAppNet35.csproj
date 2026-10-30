@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <Using Remove="System.Net.Http" />
-    <Using Condition="'$(TargetFramework)' == 'net35'" Remove="System.Threading.Tasks" />
+    <Using Remove="System.Threading.Tasks" />
   </ItemGroup>
 
   <ItemGroup>

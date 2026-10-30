@@ -12,8 +12,8 @@ const string dummyName = nameof(DummyFactory);
 DbProviderFactories.RegisterFactory(providerName, typeof(SqlClientFactory));
 DbProviderFactories.RegisterFactory(dummyName, typeof(DummyFactory));
 
-DataAccessTrace.ReplaceDbProviderFactoriesToTracingProvider();
-DataAccessTrace.ReplaceDbProviderFactoriesToTracingProvider();
+DataAccessTrace.ReplaceDbProviderFactoriesWithTracingProviders();
+DataAccessTrace.ReplaceDbProviderFactoriesWithTracingProviders();
 
 var factory = DbProviderFactories.GetFactory(providerName);
 Console.WriteLine(factory.ToString());
