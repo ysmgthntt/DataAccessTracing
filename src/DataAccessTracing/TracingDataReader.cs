@@ -192,7 +192,7 @@ namespace DataAccessTracing
 
         private void CloseDataReader()
         {
-            _info.RowCount = _rowCount;
+            _info.Close(_rowCount);
             DataAccessTrace.TraceHandler.OnDataReaderClosed(_info);
         }
 
