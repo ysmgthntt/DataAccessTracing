@@ -97,6 +97,22 @@ namespace DataAccessTracing
         }
 #endif
 
+#if NET
+        public override bool SupportsSavepoints => _innerTransaction.SupportsSavepoints;
+
+        public override void Save(string savepointName) => _innerTransaction.Save(savepointName);
+
+        public override void Rollback(string savepointName) => _innerTransaction.Rollback(savepointName);
+
+        public override void Release(string savepointName) => _innerTransaction.Release(savepointName);
+
+        public override Task SaveAsync(string savepointName, CancellationToken cancellationToken = default) => _innerTransaction.SaveAsync(savepointName, cancellationToken);
+
+        public override Task RollbackAsync(string savepointName, CancellationToken cancellationToken = default) => _innerTransaction.RollbackAsync(savepointName, cancellationToken);
+
+        public override Task ReleaseAsync(string savepointName, CancellationToken cancellationToken = default) => _innerTransaction.ReleaseAsync(savepointName, cancellationToken);
+#endif
+
         //
 
         // dispose check
