@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.Common;
 using DataAccessTracing.Diagnostics;
@@ -189,6 +190,12 @@ namespace DataAccessTracing
                 DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 #endif
+#endif
+
+#if NET
+        public override Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default) => _innerReader.GetColumnSchemaAsync(cancellationToken);
+
+        public override Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default) => _innerReader.GetSchemaTableAsync(cancellationToken);
 #endif
 
         private void CloseDataReader()
