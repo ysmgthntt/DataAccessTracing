@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
+using System.Reflection;
 using System.Transactions;
 using DataAccessTracing.Diagnostics;
 
@@ -137,6 +138,33 @@ namespace DataAccessTracing
                 DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 #endif
+#endif
+
+#if NET
+        public override bool CanCreateBatch => _innerConnection.CanCreateBatch;
+
+        private Func<DbBatch>? _createDbBatch;
+
+        protected override DbBatch CreateDbBatch()
+        {
+            if (_createDbBatch is null)
+            {
+                var mi = _innerConnection.GetType().GetMethod(nameof(CreateDbBatch), BindingFlags.NonPublic | BindingFlags.Instance);
+                _createDbBatch = mi!.CreateDelegate<Func<DbBatch>>();
+            }
+            var innerBatch = _createDbBatch();
+            // TODO: TracingBatch
+            return innerBatch;
+        }
+
+        public override Task<DataTable> GetSchemaAsync(CancellationToken cancellationToken = default)
+            => _innerConnection.GetSchemaAsync(cancellationToken);
+
+        public override Task<DataTable> GetSchemaAsync(string collectionName, CancellationToken cancellationToken = default)
+            => _innerConnection.GetSchemaAsync(collectionName, cancellationToken);
+
+        public override Task<DataTable> GetSchemaAsync(string collectionName, string?[] restrictionValues, CancellationToken cancellationToken = default)
+            => _innerConnection.GetSchemaAsync(collectionName, restrictionValues, cancellationToken);
 #endif
 
         //
