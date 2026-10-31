@@ -134,7 +134,7 @@ namespace DataAccessTracing.Diagnostics
                             DbType.DateTime2 or
                             DbType.DateTimeOffset
                     } p => $"'{p.Value}'",
-                    { Value: Enum v } => $"{Convert.ToInt32(v)}/*{v}*/",
+                    { Value: Enum v } => $"{Convert.ToInt32(v, null)}/*{v}*/",
                     var p => p.Value.ToString(),
                 };
 
