@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -69,6 +70,7 @@ namespace DataAccessTracing.Diagnostics
                 yield return new ParameterInfo(parameter.ParameterName, parameter.Value, parameter.DbType, parameter.Direction);
         }
 
+        [SuppressMessage("Style", "IDE0305")]
         internal void Begin()
         {
             if (DataAccessTrace.IsParameterValidationEnabled)
@@ -102,6 +104,7 @@ namespace DataAccessTracing.Diagnostics
 
         private List<ParameterInfo>? _missingParametersInCommandText;
 
+        [SuppressMessage("Style", "IDE0028"), SuppressMessage("Style", "IDE0306")]
         private string ExpandCommandText()
         {
             var parameters = _parameters ??= new(EnumerateParameters());
@@ -145,6 +148,7 @@ namespace DataAccessTracing.Diagnostics
             return sql;
         }
 
+        [SuppressMessage("Style", "IDE0028"), SuppressMessage("Style", "IDE0306")]
         private string GetStoredProcCommandText()
         {
             var parameters = _parameters ??= new(EnumerateParameters());
