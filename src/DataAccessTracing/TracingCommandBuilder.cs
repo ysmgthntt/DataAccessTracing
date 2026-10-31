@@ -56,10 +56,7 @@ namespace DataAccessTracing
         protected override void SetRowUpdatingHandler(DbDataAdapter adapter)
         {
             if (adapter is TracingDataAdapter tracingDataAdapter)
-            {
-                tracingDataAdapter.Info.Used();
-                adapter = tracingDataAdapter.InnerDataAdapter;
-            }
+                adapter = tracingDataAdapter.GetInnerDataAdapter();
             _setRowUpdatingHandler ??= CreateInnerBuilderMethodDelegate<Action<DbDataAdapter>>();
             _setRowUpdatingHandler(adapter);
         }

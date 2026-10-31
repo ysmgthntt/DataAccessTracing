@@ -10,15 +10,11 @@ namespace DataAccessTracing
         private readonly DbDataAdapter _innerAdapter;
         private readonly DataAdapterInfo _info;
 
-        internal DataAdapterInfo Info => _info;
-
         internal TracingDataAdapter(DbDataAdapter innerAdapter)
         {
             _innerAdapter = innerAdapter;
             _info = new();
         }
-
-        internal DbDataAdapter InnerDataAdapter => _innerAdapter;
 
         public override bool ReturnProviderSpecificTypes
         {
@@ -75,6 +71,12 @@ namespace DataAccessTracing
             => (command as TracingCommand)?.GetInnerCommand() ?? command;
 
         //
+
+        internal DbDataAdapter GetInnerDataAdapter()
+        {
+            _info.Used();
+            return _innerAdapter;
+        }
 
         private T ExecuteWithTrace<T>(Func<T> innerAdapterMethod, [CallerMemberName] string methodName = "")
         {
