@@ -124,10 +124,12 @@ namespace DataAccessTracing
         public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default)
             => _innerConnection.ChangeDatabaseAsync(databaseName, cancellationToken);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2215")]
         public override async ValueTask DisposeAsync()
         {
             await _innerConnection.DisposeAsync().ConfigureAwait(false);
             _innerConnection.StateChange -= InnerConnection_StateChange;
+            // base.DisposeAsync() を呼ぶと base.Dispose() -> this.Dispose(true) が呼ばれるため、 base.Dispose(true) だけ呼んでおく。
             base.Dispose(true);
             // dispose check
             GC.SuppressFinalize(this);

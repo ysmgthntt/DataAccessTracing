@@ -84,9 +84,11 @@ namespace DataAccessTracing
             DataAccessTrace.TraceHandler.OnRollbackTransaction(_info);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2215")]
         public override async ValueTask DisposeAsync()
         {
             await _innerTransaction.DisposeAsync().ConfigureAwait(false);
+            // base.DisposeAsync() を呼ぶと base.Dispose() -> this.Dispose(true) が呼ばれるため、 base.Dispose(true) だけ呼んでおく。
             base.Dispose(true);
             // dispose check
             GC.SuppressFinalize(this);

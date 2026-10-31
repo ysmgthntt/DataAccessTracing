@@ -107,6 +107,7 @@ namespace DataAccessTracing
             return false;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2215")]
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -171,6 +172,7 @@ namespace DataAccessTracing
             CloseDataReader();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2215")]
         public override async ValueTask DisposeAsync()
         {
             await _innerReader.DisposeAsync().ConfigureAwait(false);
