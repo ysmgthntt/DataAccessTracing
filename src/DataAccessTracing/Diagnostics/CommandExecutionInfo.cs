@@ -2,7 +2,6 @@
 using System.Data.Common;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace DataAccessTracing.Diagnostics
@@ -21,15 +20,23 @@ namespace DataAccessTracing.Diagnostics
 
         public TimeSpan Duration => _sw.Elapsed;
         public int RecordsAffected { get; internal set; }
-        public Exception? Exception { get; internal set; }
+
+        public Exception? Exception
+        {
+            get;
+            internal set
+            {
+                field = value;
+                _sw.Stop();
+            }
+        }
 
         private IDataParameterCollection? _parameterCollection;
 
         private readonly Stopwatch _sw = new();
 
         internal CommandExecutionInfo(CommandInfo info, ConnectionInfo? connectionInfo, TransactionInfo? transactionInfo,
-            string commandText, CommandType commandType, IDataParameterCollection parameterCollection,
-            [CallerMemberName] string methodName = "")
+            string commandText, CommandType commandType, IDataParameterCollection parameterCollection, string methodName)
         {
             ExecutionId = Guid.NewGuid();
             CommandInfo = info;
@@ -183,6 +190,7 @@ namespace DataAccessTracing.Diagnostics
         {
             _parameterCollection = null;
             Exception = null;
+            _sw.Stop();
         }
     }
 }

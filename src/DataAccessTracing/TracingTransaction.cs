@@ -1,10 +1,9 @@
 ﻿using System.Data;
 using System.Data.Common;
+using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
-    using Diagnostics;
-
     internal sealed class TracingTransaction : DbTransaction
     {
         private readonly DbTransaction _innerTransaction;
@@ -54,7 +53,10 @@ namespace DataAccessTracing
         protected override void Dispose(bool disposing)
         {
             if (disposing)
+            {
                 _innerTransaction.Dispose();
+                _info.End();
+            }
 
             base.Dispose(disposing);
 

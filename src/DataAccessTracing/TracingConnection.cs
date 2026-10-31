@@ -2,11 +2,10 @@
 using System.Data;
 using System.Data.Common;
 using System.Transactions;
+using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
-    using Diagnostics;
-
     internal sealed class TracingConnection : DbConnection
     {
         private readonly DbConnection _innerConnection;

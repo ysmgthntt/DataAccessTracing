@@ -2,11 +2,10 @@
 using System.Data.Common;
 using System.Diagnostics;
 using System.Reflection;
+using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
-    using Diagnostics;
-
     public static class DataAccessTrace
     {
         public static void ReplaceDbProviderFactoriesWithTracingProviders()

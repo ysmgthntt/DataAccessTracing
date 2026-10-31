@@ -2,17 +2,19 @@
 using System.Data;
 using System.Data.Common;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
-    using Diagnostics;
-
     internal sealed class TracingCommand : DbCommand
     {
         private readonly DbCommand _innerCommand;
         private TracingConnection? _connection;
         private TracingTransaction? _transaction;
         private readonly CommandInfo _info;
+
+        internal CommandInfo Info => _info;
 
         internal TracingCommand(DbCommand innerCommand, TracingConnection? connection)
         {
@@ -113,10 +115,7 @@ namespace DataAccessTracing
 
         public override int ExecuteNonQuery()
         {
-            Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
-            DataAccessTrace.TraceHandler.OnCommandExecuting(info);
-            info.Begin();
+            using var info = BeginExecution();
             int recordsAffected;
             try
             {
@@ -136,10 +135,7 @@ namespace DataAccessTracing
 
         public override object ExecuteScalar()
         {
-            Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
-            DataAccessTrace.TraceHandler.OnCommandExecuting(info);
-            info.Begin();
+            using var info = BeginExecution();
             object result;
             try
             {
@@ -158,10 +154,7 @@ namespace DataAccessTracing
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
-            DataAccessTrace.TraceHandler.OnCommandExecuting(info);
-            info.Begin();
+            using var info = BeginExecution();
             DbDataReader innerReader;
             try
             {
@@ -181,10 +174,7 @@ namespace DataAccessTracing
 #if !NET35
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
-            Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
-            DataAccessTrace.TraceHandler.OnCommandExecuting(info);
-            info.Begin();
+            using var info = BeginExecution();
             int recordsAffected;
             try
             {
@@ -204,10 +194,7 @@ namespace DataAccessTracing
 
         public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
-            Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
-            DataAccessTrace.TraceHandler.OnCommandExecuting(info);
-            info.Begin();
+            using var info = BeginExecution();
             object result;
             try
             {
@@ -226,10 +213,7 @@ namespace DataAccessTracing
 
         protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
-            Used();
-            using var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters);
-            DataAccessTrace.TraceHandler.OnCommandExecuting(info);
-            info.Begin();
+            using var info = BeginExecution();
             DbDataReader innerReader;
             try
             {
@@ -279,11 +263,15 @@ namespace DataAccessTracing
 
         // protected override object GetService(Type service) => ((IServiceProvider)_innerConnection).GetService(service);
 
-        private void Used()
+        internal CommandExecutionInfo BeginExecution([CallerMemberName] string methodName = "")
         {
             _info.Used();
             _connection?.Info.Used();
             _transaction?.Info.Used();
+            var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters, methodName);
+            DataAccessTrace.TraceHandler.OnCommandExecuting(info);
+            info.Begin();
+            return info;
         }
 
         // dispose check

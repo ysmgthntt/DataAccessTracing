@@ -1,11 +1,10 @@
 ﻿using System.Collections;
 using System.Data;
 using System.Data.Common;
+using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
-    using Diagnostics;
-
     internal sealed class TracingDataReader : DbDataReader
     {
         private readonly DbDataReader _innerReader;
