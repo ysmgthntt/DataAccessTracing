@@ -142,23 +142,20 @@ namespace DataAccessTracing
 
         private TDelegate CreateInnerBuilderMethodDelegate<TDelegate>([CallerMemberName] string methodName = "")
             where TDelegate : Delegate
-        {
-            var mi = _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance)!;
-#if !NET35
-            var d = (TDelegate)mi.CreateDelegate(typeof(TDelegate));
-#else
-            var d = (TDelegate)Delegate.CreateDelegate(typeof(TDelegate), _innerBuilder, mi);
-#endif
-            return d;
-        }
+            => CreateInnerBuilderMethodDelegate<TDelegate>(null, methodName);
 
-        private TDelegate CreateInnerBuilderMethodDelegate<TDelegate>(Type[] types, [CallerMemberName] string methodName = "")
+        private TDelegate CreateInnerBuilderMethodDelegate<TDelegate>(Type[]? types, [CallerMemberName] string methodName = "")
             where TDelegate : Delegate
         {
-            var mi = _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance, null, types, null)!;
-#if !NET35
+            MethodInfo mi = types is null
+                ? _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance)!
+                : _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance, null, types, null)!;
+#if NET
+            var d = mi.CreateDelegate<TDelegate>();
+#elif !NET35
             var d = (TDelegate)mi.CreateDelegate(typeof(TDelegate));
 #else
+            // TODO
             var d = (TDelegate)Delegate.CreateDelegate(typeof(TDelegate), _innerBuilder, mi);
 #endif
             return d;
