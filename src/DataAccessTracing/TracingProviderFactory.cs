@@ -66,6 +66,21 @@ namespace DataAccessTracing
         public override bool CanCreateCommandBuilder => _innerFactory.CanCreateCommandBuilder;
         public override bool CanCreateDataAdapter => _innerFactory.CanCreateDataAdapter;
 #endif
+
+#if NET
+        public override bool CanCreateBatch => _innerFactory.CanCreateBatch;
+
+        public override DbBatch CreateBatch() => _innerFactory.CreateBatch();
+
+        public override DbBatchCommand CreateBatchCommand() => _innerFactory.CreateBatchCommand();
+
+        public override DbDataSource CreateDataSource(string connectionString)
+        {
+            var innerDataSource = _innerFactory.CreateDataSource(connectionString);
+            // TODO
+            return innerDataSource;
+        }
+#endif
     }
 
     internal sealed class TracingProviderFactory<TDbProviderFactory> : TracingProviderFactory
