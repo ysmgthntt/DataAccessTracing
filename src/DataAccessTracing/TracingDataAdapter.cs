@@ -71,15 +71,8 @@ namespace DataAccessTracing
                 DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 
-        private DbCommand GetInnerCommand(DbCommand command)
-        {
-            if (command is TracingCommand tracingCommand)
-            {
-                tracingCommand.Info.Used();
-                return tracingCommand.InnerCommand;
-            }
-            return command;
-        }
+        private static DbCommand GetInnerCommand(DbCommand command)
+            => (command as TracingCommand)?.GetInnerCommand() ?? command;
 
         //
 
@@ -90,7 +83,7 @@ namespace DataAccessTracing
             var command = SelectCommand;
             if (command is TracingCommand tracingCommand)
             {
-                _innerAdapter.SelectCommand = tracingCommand.InnerCommand;
+                _innerAdapter.SelectCommand = tracingCommand.GetInnerCommand();
                 using var info = tracingCommand.BeginExecution(methodName);
                 T result;
                 try
@@ -129,9 +122,9 @@ namespace DataAccessTracing
         {
             _info.Used();
             // DataRowState.Added のみ、などの場合もすべて使用済にする。
-            (InsertCommand as TracingCommand)?.Info.Used();
-            (UpdateCommand as TracingCommand)?.Info.Used();
-            (DeleteCommand as TracingCommand)?.Info.Used();
+            (InsertCommand as TracingCommand)?.Used();
+            (UpdateCommand as TracingCommand)?.Used();
+            (DeleteCommand as TracingCommand)?.Used();
 
             return base.Update(dataRows, tableMapping);
         }

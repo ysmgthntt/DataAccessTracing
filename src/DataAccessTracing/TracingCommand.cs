@@ -14,16 +14,12 @@ namespace DataAccessTracing
         private TracingTransaction? _transaction;
         private readonly CommandInfo _info;
 
-        internal CommandInfo Info => _info;
-
         internal TracingCommand(DbCommand innerCommand, TracingConnection? connection)
         {
             _innerCommand = innerCommand;
             _connection = connection;
             _info = new CommandInfo();
         }
-
-        internal DbCommand InnerCommand => _innerCommand;
 
         //
 
@@ -272,13 +268,22 @@ namespace DataAccessTracing
 
         //
 
-        // protected override object GetService(Type service) => ((IServiceProvider)_innerConnection).GetService(service);
-
-        internal CommandExecutionInfo BeginExecution([CallerMemberName] string methodName = "")
+        internal void Used()
         {
             _info.Used();
             _connection?.Info.Used();
             _transaction?.Info.Used();
+        }
+
+        internal DbCommand GetInnerCommand()
+        {
+            Used();
+            return _innerCommand;
+        }
+
+        internal CommandExecutionInfo BeginExecution([CallerMemberName] string methodName = "")
+        {
+            Used();
             var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters, methodName);
             DataAccessTrace.TraceHandler.OnCommandExecuting(info);
             info.Begin();

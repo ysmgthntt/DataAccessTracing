@@ -89,10 +89,7 @@ namespace DataAccessTracing
         protected override DataTable GetSchemaTable(DbCommand sourceCommand)
         {
             if (sourceCommand is TracingCommand tracingCommand)
-            {
-                tracingCommand.Info.Used();
-                sourceCommand = tracingCommand.InnerCommand;
-            }
+                sourceCommand = tracingCommand.GetInnerCommand();
             _getSchemaTable ??= CreateInnerBuilderMethodDelegate<Func<DbCommand, DataTable>>();
             return _getSchemaTable(sourceCommand);
         }
@@ -102,10 +99,7 @@ namespace DataAccessTracing
         protected override DbCommand InitializeCommand(DbCommand command)
         {
             if (command is TracingCommand tracingCommand)
-            {
-                tracingCommand.Info.Used();
-                command = tracingCommand.InnerCommand;
-            }
+                command = tracingCommand.GetInnerCommand();
             _initializeCommand ??= CreateInnerBuilderMethodDelegate<Func<DbCommand, DbCommand>>();
             return _initializeCommand(command);
         }
@@ -219,13 +213,15 @@ namespace DataAccessTracing
         {
             ArgumentNullException.ThrowIfNull(command);
 
+            var innerCommand = command.GetInnerCommand();
+
             if (_deriveParametersMethodProxy is null)
             {
                 if (_noDeriveParametersMethod || (_deriveParametersMethodProxy = CreateDeriveParametersMethodProxy()) is null)
                     throw new NotSupportedException($"{typeof(TDbProviderFactory).Name} does not support parameter discovery.");
             }
 
-            _deriveParametersMethodProxy(command.InnerCommand);
+            _deriveParametersMethodProxy(innerCommand);
         }
     }
 }
