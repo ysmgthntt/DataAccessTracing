@@ -10,11 +10,15 @@ namespace DataAccessTracing
         private readonly DbDataAdapter _innerAdapter;
         private readonly DataAdapterInfo _info;
 
+        internal DataAdapterInfo Info => _info;
+
         internal TracingDataAdapter(DbDataAdapter innerAdapter)
         {
             _innerAdapter = innerAdapter;
             _info = new();
         }
+
+        internal DbDataAdapter InnerDataAdapter => _innerAdapter;
 
         public override bool ReturnProviderSpecificTypes
         {

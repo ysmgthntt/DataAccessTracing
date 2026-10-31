@@ -7,5 +7,6 @@
         Command,
         DataReader,
         DataAdapter,
+        CommandBuilder,
     }
 }
