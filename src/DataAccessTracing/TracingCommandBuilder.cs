@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -69,6 +70,9 @@ namespace DataAccessTracing
             set => _innerBuilder.CatalogLocation = value;
         }
 
+#if NET
+        [AllowNull]
+#endif
         public override string CatalogSeparator
         {
             get => _innerBuilder.CatalogSeparator;
@@ -91,24 +95,30 @@ namespace DataAccessTracing
             return _getSchemaTable(sourceCommand);
         }
 
-        private Func<DbCommand, DbCommand>? _initializeCommand;
+        private Func<DbCommand?, DbCommand>? _initializeCommand;
 
-        protected override DbCommand InitializeCommand(DbCommand command)
+        protected override DbCommand InitializeCommand(DbCommand? command)
         {
             if (command is TracingCommand tracingCommand)
                 command = tracingCommand.GetInnerCommand();
-            _initializeCommand ??= CreateInnerBuilderMethodDelegate<Func<DbCommand, DbCommand>>();
+            _initializeCommand ??= CreateInnerBuilderMethodDelegate<Func<DbCommand?, DbCommand>>();
             return _initializeCommand(command);
         }
 
         public override string QuoteIdentifier(string unquotedIdentifier) => _innerBuilder.QuoteIdentifier(unquotedIdentifier);
 
+#if NET
+        [AllowNull]
+#endif
         public override string QuotePrefix
         {
             get => _innerBuilder.QuotePrefix;
             set => _innerBuilder.QuotePrefix = value;
         }
 
+#if NET
+        [AllowNull]
+#endif
         public override string QuoteSuffix
         {
             get => _innerBuilder.QuoteSuffix;
@@ -117,6 +127,9 @@ namespace DataAccessTracing
 
         public override void RefreshSchema() => _innerBuilder.RefreshSchema();
 
+#if NET
+        [AllowNull]
+#endif
         public override string SchemaSeparator
         {
             get => _innerBuilder.SchemaSeparator;
@@ -130,7 +143,7 @@ namespace DataAccessTracing
         private TDelegate CreateInnerBuilderMethodDelegate<TDelegate>([CallerMemberName] string methodName = "")
             where TDelegate : Delegate
         {
-            var mi = _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+            var mi = _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance)!;
 #if !NET35
             var d = (TDelegate)mi.CreateDelegate(typeof(TDelegate));
 #else
@@ -142,7 +155,7 @@ namespace DataAccessTracing
         private TDelegate CreateInnerBuilderMethodDelegate<TDelegate>(Type[] types, [CallerMemberName] string methodName = "")
             where TDelegate : Delegate
         {
-            var mi = _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance, null, types, null);
+            var mi = _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance, null, types, null)!;
 #if !NET35
             var d = (TDelegate)mi.CreateDelegate(typeof(TDelegate));
 #else
@@ -182,6 +195,11 @@ namespace DataAccessTracing
         {
             var innerFactory = TracingProviderFactory<TDbProviderFactory>.Instance.InnerFactory;
             using var cb = innerFactory.CreateCommandBuilder();
+            if (cb is null)
+            {
+                _noDeriveParametersMethod = true;
+                return null;
+            }
             var mi = cb.GetType().GetMethod(nameof(DeriveParameters), BindingFlags.Public | BindingFlags.Static);
             if (mi is null)
             {

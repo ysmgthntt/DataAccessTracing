@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using DataAccessTracing.Diagnostics;
@@ -23,6 +24,9 @@ namespace DataAccessTracing
 
         //
 
+#if NET
+        [AllowNull]
+#endif
         public override string CommandText
         {
             get => _innerCommand.CommandText;
@@ -47,7 +51,7 @@ namespace DataAccessTracing
             set => _innerCommand.DesignTimeVisible = value;
         }
 
-        public override ISite Site
+        public override ISite? Site
         {
             get => _innerCommand.Site;
             set => _innerCommand.Site = value;
@@ -71,13 +75,14 @@ namespace DataAccessTracing
                 }
                 else if (value is not null)
                 {
-                    DbProviderFactory innerFactory;
+                    DbProviderFactory? innerFactory;
 #if !NET35
                     innerFactory = DbProviderFactories.GetFactory(value);
 #else
                     innerFactory = (DbProviderFactory)value.GetType().GetProperty(nameof(DbProviderFactory), BindingFlags.NonPublic | BindingFlags.Instance).GetValue(value, null);
 #endif
-                    _connection = new TracingConnection(value, new TracingProviderFactory(innerFactory));
+                    var tracingFactory = innerFactory is null ? null : new TracingProviderFactory(innerFactory);
+                    _connection = new TracingConnection(value, tracingFactory);
                     _innerCommand.Connection = value;
                 }
                 else
@@ -129,10 +134,10 @@ namespace DataAccessTracing
             return recordsAffected;
         }
 
-        public override object ExecuteScalar()
+        public override object? ExecuteScalar()
         {
             using var info = BeginExecution();
-            object result;
+            object? result;
             try
             {
                 result = _innerCommand.ExecuteScalar();
@@ -188,10 +193,10 @@ namespace DataAccessTracing
             return recordsAffected;
         }
 
-        public override async Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
+        public override async Task<object?> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
             using var info = BeginExecution();
-            object result;
+            object? result;
             try
             {
                 result = await _innerCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);

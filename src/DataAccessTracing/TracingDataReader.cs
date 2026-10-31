@@ -53,11 +53,11 @@ namespace DataAccessTracing
 
         public override byte GetByte(int ordinal) => _innerReader.GetByte(ordinal);
 
-        public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length) => _innerReader.GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
+        public override long GetBytes(int ordinal, long dataOffset, byte[]? buffer, int bufferOffset, int length) => _innerReader.GetBytes(ordinal, dataOffset, buffer, bufferOffset, length);
 
         public override char GetChar(int ordinal) => _innerReader.GetChar(ordinal);
 
-        public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length) => _innerReader.GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
+        public override long GetChars(int ordinal, long dataOffset, char[]? buffer, int bufferOffset, int length) => _innerReader.GetChars(ordinal, dataOffset, buffer, bufferOffset, length);
 
         public override string GetDataTypeName(int ordinal) => _innerReader.GetDataTypeName(ordinal);
 
@@ -85,7 +85,7 @@ namespace DataAccessTracing
 
         public override int GetOrdinal(string name) => _innerReader.GetOrdinal(name);
 
-        public override DataTable GetSchemaTable() => _innerReader.GetSchemaTable();
+        public override DataTable? GetSchemaTable() => _innerReader.GetSchemaTable();
 
         public override string GetString(int ordinal) => _innerReader.GetString(ordinal);
 

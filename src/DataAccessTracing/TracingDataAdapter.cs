@@ -67,7 +67,7 @@ namespace DataAccessTracing
                 DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 
-        private static DbCommand GetInnerCommand(DbCommand command)
+        private static DbCommand? GetInnerCommand(DbCommand? command)
             => (command as TracingCommand)?.GetInnerCommand() ?? command;
 
         //
@@ -133,7 +133,7 @@ namespace DataAccessTracing
 
         // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Data.Common/src/System/Data/Common/DbDataAdapter.cs#L421
         // 以下の 2 つが FillSchemaInternal から最終的に呼ばれる。
-        protected override DataTable FillSchema(DataTable dataTable, SchemaType schemaType, IDataReader dataReader)
+        protected override DataTable? FillSchema(DataTable dataTable, SchemaType schemaType, IDataReader dataReader)
         {
             _info.Used();
             return base.FillSchema(dataTable, schemaType, dataReader);

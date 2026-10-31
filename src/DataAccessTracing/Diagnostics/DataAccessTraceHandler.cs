@@ -56,6 +56,12 @@ namespace DataAccessTracing.Diagnostics
 
         //
 
-        protected static string GetFullMethodName(MethodBase? method) => method is null ? "" : $"{method.DeclaringType.FullName}.{method.Name}";
+        protected static string GetFullMethodName(MethodBase? method)
+            => method switch
+            {
+                null => "",
+                { DeclaringType: null or { FullName: null or "" } } => method.Name,
+                _ => $"{method.DeclaringType.FullName}.{method.Name}"
+            };
     }
 }

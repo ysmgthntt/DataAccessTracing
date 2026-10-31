@@ -18,8 +18,8 @@ namespace DataAccessTracing
         private protected TracingProviderFactory()
         {
             var t = GetInnerFactoryType();
-            var fi = t.GetField("Instance", BindingFlags.Public | BindingFlags.Static);
-            _innerFactory = (DbProviderFactory)fi.GetValue(null);
+            var fi = t.GetField("Instance", BindingFlags.Public | BindingFlags.Static)!;
+            _innerFactory = (DbProviderFactory)fi.GetValue(null)!;
         }
 
         private protected virtual Type GetInnerFactoryType() => throw new NotImplementedException();
@@ -30,37 +30,39 @@ namespace DataAccessTracing
 
         public override bool CanCreateDataSourceEnumerator => _innerFactory.CanCreateDataSourceEnumerator;
 
-        public override DbCommand CreateCommand()
+        public override DbCommand? CreateCommand()
         {
             var innerCommand = _innerFactory.CreateCommand();
-            return new TracingCommand(innerCommand, null);
+            return innerCommand is null ? null : new TracingCommand(innerCommand, null);
         }
 
-        public override DbCommandBuilder CreateCommandBuilder()
+        public override DbCommandBuilder? CreateCommandBuilder()
         {
             var innerBuilder = _innerFactory.CreateCommandBuilder();
+            if (innerBuilder is null)
+                return null;
             var t = typeof(TracingCommandBuilder<>).MakeGenericType(_innerFactory.GetType());
-            var cb = (DbCommandBuilder)Activator.CreateInstance(t, innerBuilder);
+            var cb = (DbCommandBuilder?)Activator.CreateInstance(t, innerBuilder);
             return cb;
         }
 
-        public override DbConnection CreateConnection()
+        public override DbConnection? CreateConnection()
         {
             var innerConnection = _innerFactory.CreateConnection();
-            return new TracingConnection(innerConnection, this);
+            return innerConnection is null ? null : new TracingConnection(innerConnection, this);
         }
 
-        public override DbConnectionStringBuilder CreateConnectionStringBuilder() => _innerFactory.CreateConnectionStringBuilder();
+        public override DbConnectionStringBuilder? CreateConnectionStringBuilder() => _innerFactory.CreateConnectionStringBuilder();
 
-        public override DbDataAdapter CreateDataAdapter()
+        public override DbDataAdapter? CreateDataAdapter()
         {
             var innerAdapter = _innerFactory.CreateDataAdapter();
-            return new TracingDataAdapter(innerAdapter);
+            return innerAdapter is null ? null : new TracingDataAdapter(innerAdapter);
         }
 
-        public override DbDataSourceEnumerator CreateDataSourceEnumerator() => _innerFactory.CreateDataSourceEnumerator();
+        public override DbDataSourceEnumerator? CreateDataSourceEnumerator() => _innerFactory.CreateDataSourceEnumerator();
 
-        public override DbParameter CreateParameter() => _innerFactory.CreateParameter();
+        public override DbParameter? CreateParameter() => _innerFactory.CreateParameter();
 
 #if !NETFRAMEWORK
         public override bool CanCreateCommandBuilder => _innerFactory.CanCreateCommandBuilder;
@@ -90,10 +92,10 @@ namespace DataAccessTracing
 
         private protected override Type GetInnerFactoryType() => typeof(TDbProviderFactory);
 
-        public override DbCommandBuilder CreateCommandBuilder()
+        public override DbCommandBuilder? CreateCommandBuilder()
         {
             var innerBuilder = InnerFactory.CreateCommandBuilder();
-            return new TracingCommandBuilder<TDbProviderFactory>(innerBuilder);
+            return innerBuilder is null ? null : new TracingCommandBuilder<TDbProviderFactory>(innerBuilder);
         }
     }
 }

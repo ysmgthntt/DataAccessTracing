@@ -105,9 +105,12 @@ namespace DataAccessTracing
             var trace = new StackTrace();
             for (int index = startFrameCount; index < trace.FrameCount; index++)
             {
-                var method = trace.GetFrame(index).GetMethod();
-                var typeName = method.DeclaringType.FullName;
-                if (!typeName.StartsWith("DataAccessTracing.", StringComparison.Ordinal) &&
+                var method = trace.GetFrame(index)?.GetMethod();
+                if (method is null)
+                    continue;
+                var typeName = method.DeclaringType?.FullName;
+                if (typeName is not null &&
+                    !typeName.StartsWith("DataAccessTracing.", StringComparison.Ordinal) &&
                     !typeName.StartsWith("System.", StringComparison.Ordinal) &&
                     !typeName.StartsWith("Microsoft.", StringComparison.Ordinal))
                 {

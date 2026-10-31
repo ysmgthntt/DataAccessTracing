@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Transactions;
 using DataAccessTracing.Diagnostics;
@@ -10,13 +11,13 @@ namespace DataAccessTracing
     internal sealed class TracingConnection : DbConnection
     {
         private readonly DbConnection _innerConnection;
-        private readonly TracingProviderFactory _factory;
+        private readonly TracingProviderFactory? _factory;
 
         private readonly ConnectionInfo _info = new();
 
         internal ConnectionInfo Info => _info;
 
-        public TracingConnection(DbConnection innerConnection, TracingProviderFactory factory)
+        public TracingConnection(DbConnection innerConnection, TracingProviderFactory? factory)
         {
             _innerConnection = innerConnection;
             _factory = factory;
@@ -31,12 +32,15 @@ namespace DataAccessTracing
 
         //
 
-        public override event StateChangeEventHandler StateChange
+        public override event StateChangeEventHandler? StateChange
         {
             add => _innerConnection.StateChange += value;
             remove => _innerConnection.StateChange -= value;
         }
 
+#if NET
+        [AllowNull]
+#endif
         public override string ConnectionString
         {
             get => _innerConnection.ConnectionString;
@@ -51,7 +55,7 @@ namespace DataAccessTracing
 
         public override string ServerVersion => _innerConnection.ServerVersion;
 
-        public override ISite Site
+        public override ISite? Site
         {
             get => _innerConnection.Site;
             set => _innerConnection.Site = value;
@@ -59,7 +63,7 @@ namespace DataAccessTracing
 
         public override ConnectionState State => _innerConnection.State;
 
-        protected override DbProviderFactory DbProviderFactory => _factory;
+        protected override DbProviderFactory? DbProviderFactory => _factory;
 
         public override void ChangeDatabase(string databaseName) => _innerConnection.ChangeDatabase(databaseName);
 
@@ -67,7 +71,7 @@ namespace DataAccessTracing
 
         public override void Open() => _innerConnection.Open();
 
-        public override void EnlistTransaction(Transaction transaction)
+        public override void EnlistTransaction(Transaction? transaction)
         {
             _innerConnection.EnlistTransaction(transaction);
             // TODO
@@ -77,7 +81,7 @@ namespace DataAccessTracing
 
         public override DataTable GetSchema(string collectionName) => _innerConnection.GetSchema(collectionName);
 
-        public override DataTable GetSchema(string collectionName, string[] restrictionValues) => _innerConnection.GetSchema(collectionName, restrictionValues);
+        public override DataTable GetSchema(string collectionName, string?[] restrictionValues) => _innerConnection.GetSchema(collectionName, restrictionValues);
 
         protected override DbTransaction BeginDbTransaction(System.Data.IsolationLevel isolationLevel)
         {
@@ -91,7 +95,7 @@ namespace DataAccessTracing
             return new TracingCommand(innerCommand, this);
         }
 
-        protected override object GetService(Type service) => ((IServiceProvider)_innerConnection).GetService(service);
+        protected override object? GetService(Type service) => ((IServiceProvider)_innerConnection).GetService(service);
 
         protected override void Dispose(bool disposing)
         {
