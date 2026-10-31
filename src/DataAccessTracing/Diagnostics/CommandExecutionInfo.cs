@@ -160,7 +160,7 @@ namespace DataAccessTracing.Diagnostics
             {
                 string direction = p.Direction == ParameterDirection.Input ? "" : " " + p.Direction;
                 sb.AppendLine();
-                sb.Append($"{p.ParameterName}({p.DbType}{direction}): {p.Value}");
+                sb.Append(null, $"{p.ParameterName}({p.DbType}{direction}): {p.Value}");
             }
 
             var text = sb.ToString();

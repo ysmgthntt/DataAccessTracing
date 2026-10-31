@@ -10,3 +10,15 @@ namespace System.Runtime.CompilerServices
     }
 }
 #endif
+#if !NET
+namespace DataAccessTracing
+{
+    internal static class StringBuilderExtensions
+    {
+        extension(System.Text.StringBuilder sb)
+        {
+            public System.Text.StringBuilder Append(IFormatProvider? _, string text) => sb.Append(text);
+        }
+    }
+}
+#endif
