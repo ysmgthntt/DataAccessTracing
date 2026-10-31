@@ -43,7 +43,7 @@ namespace DataAccessTracing
                 foreach (DataRow row in providerTable.Rows)
                 {
                     string factoryTypeName = (string)row[colTypeName];
-                    if (factoryTypeName.StartsWith(nameof(DataAccessTracing)))
+                    if (factoryTypeName.StartsWith(nameof(DataAccessTracing), StringComparison.Ordinal))
                     {
                         Trace.WriteLine($"{nameof(DataAccessTracing)}: Already replaced - {row["Name"]}");
                         continue;
