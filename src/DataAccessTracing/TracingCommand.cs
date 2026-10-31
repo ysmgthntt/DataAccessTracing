@@ -235,11 +235,14 @@ namespace DataAccessTracing
 
         public override async ValueTask DisposeAsync()
         {
+            bool anyparam = _innerCommand.Parameters.Cast<object>().Any();
+            if (!_info.IsUsed && !anyparam)
+                _info.CommandText = _innerCommand.CommandText;
             await _innerCommand.DisposeAsync().ConfigureAwait(false);
             base.Dispose(true);
             // dispose check
             GC.SuppressFinalize(this);
-            if (!_info.IsUsed)
+            if (!_info.IsUsed && !anyparam)
                 DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 #endif
@@ -247,15 +250,23 @@ namespace DataAccessTracing
 
         protected override void Dispose(bool disposing)
         {
+            // ループの外側で複数コマンドを定義し、ループ内で対象データがなく使用されないことがある。
+            // パラメータがあれば使用されたこととする。
+            bool anyparam = false;
             if (disposing)
+            {
+                anyparam = _innerCommand.Parameters.Cast<object>().Any();
+                if (!_info.IsUsed && !anyparam)
+                    _info.CommandText = _innerCommand.CommandText;
                 _innerCommand.Dispose();
+            }
 
             base.Dispose(disposing);
 
             // dispose check
             if (disposing)
                 GC.SuppressFinalize(this);
-            if (!_info.IsUsed)
+            if (!_info.IsUsed && !anyparam)
                 DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
         }
 

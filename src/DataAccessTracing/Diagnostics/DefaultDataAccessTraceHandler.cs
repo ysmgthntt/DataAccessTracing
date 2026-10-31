@@ -55,6 +55,8 @@ namespace DataAccessTracing.Diagnostics
         protected internal override void OnUnusedObjectDetected(DbObjectInfo info)
         {
             Trace.WriteLine($"Unused object detected {info.Kind} Id: {info.Id}, Creation Method: {GetFullMethodName(info.CreationMethod)}");
+            if (info is CommandInfo { CommandText: not null and not "" } commandInfo)
+                Trace.WriteLine($"CommandText: {commandInfo.CommandText}");
         }
 
         protected internal override void OnDisposeLeakDetected(DbObjectInfo info)
