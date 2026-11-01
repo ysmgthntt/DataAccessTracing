@@ -19,4 +19,8 @@
     <Reference Include="System.Transactions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="DataAccessTracing.Tests" />
+  </ItemGroup>
+
 </Project>
