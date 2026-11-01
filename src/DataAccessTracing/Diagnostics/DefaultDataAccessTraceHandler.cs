@@ -33,12 +33,12 @@ namespace DataAccessTracing.Diagnostics
         {
             var nl = Environment.NewLine;
             string caller = info.CallerMethod is null ? "" : $"Caller: {GetFullMethodName(info.CallerMethod)}, ";
-            Trace.WriteLine($"[{info.MethodName}]{nl}{info.GetParameterExpandedCommandText()}{nl}{caller}Execution Id: {info.ExecutionId}");
+            Trace.WriteLine($"[{info.ExectionMethodName}]{nl}{info.GetParameterExpandedCommandText()}{nl}{caller}Execution Id: {info.ExecutionId}");
         }
 
         protected internal override void OnCommandExecuted(CommandExecutionInfo info)
         {
-            Trace.WriteLine($"Command Executed: {info.MethodName}, Duration: {info.Duration}, RecordsAffected: {info.RecordsAffected}, Execution Id: {info.ExecutionId}");
+            Trace.WriteLine($"Command Executed: {info.ExectionMethodName}, Duration: {info.Duration}, RecordsAffected: {info.RecordsAffected}, Execution Id: {info.ExecutionId}");
         }
 
         protected internal override void OnCommandException(CommandExecutionInfo info)

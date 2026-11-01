@@ -13,7 +13,7 @@ namespace DataAccessTracing.Diagnostics
         public CommandInfo CommandInfo { get; }
         public ConnectionInfo? ConnectionInfo { get; }
         public TransactionInfo? TransactionInfo { get; }
-        public string MethodName { get; }
+        public string ExectionMethodName { get; }
         public MethodBase? CallerMethod { get; }
 
         public string CommandText { get; }
@@ -43,7 +43,7 @@ namespace DataAccessTracing.Diagnostics
             CommandInfo = info;
             ConnectionInfo = connectionInfo;
             TransactionInfo = transactionInfo;
-            MethodName = methodName;
+            ExectionMethodName = methodName;
             CallerMethod = DataAccessTrace.GetCallerMethod(5);
 
             CommandText = commandText;
