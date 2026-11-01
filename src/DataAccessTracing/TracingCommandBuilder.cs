@@ -14,7 +14,8 @@ namespace DataAccessTracing
         private readonly DbCommandBuilder _innerBuilder;
         private readonly CommandBuilderInfo _info;
 
-        internal TracingCommandBuilder(DbCommandBuilder innerBuilder)
+        // public for Activator
+        public TracingCommandBuilder(DbCommandBuilder innerBuilder)
         {
             _innerBuilder = innerBuilder;
             _info = new();
