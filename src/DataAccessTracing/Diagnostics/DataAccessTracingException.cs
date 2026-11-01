@@ -2,5 +2,6 @@
 {
     public class DataAccessTracingException : Exception
     {
+        internal DataAccessTracingException() { }
     }
 }
