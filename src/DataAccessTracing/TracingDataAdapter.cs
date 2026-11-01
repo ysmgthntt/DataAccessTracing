@@ -86,7 +86,7 @@ namespace DataAccessTracing
             if (command is TracingCommand tracingCommand)
             {
                 _innerAdapter.SelectCommand = tracingCommand.GetInnerCommand();
-                using var info = tracingCommand.BeginExecution(methodName);
+                using var _ = tracingCommand.BeginExecution(out var info, methodName);
                 T result;
                 try
                 {

@@ -7,7 +7,7 @@ using System.Text;
 
 namespace DataAccessTracing.Diagnostics
 {
-    public sealed class CommandExecutionInfo : IDisposable
+    public sealed class CommandExecutionInfo
     {
         public Guid ExecutionId { get; }
         public CommandInfo CommandInfo { get; }
@@ -193,11 +193,16 @@ namespace DataAccessTracing.Diagnostics
             return -1;
         }
 
-        void IDisposable.Dispose()
+        internal struct Disposer(CommandExecutionInfo info) : IDisposable
         {
-            _parameterCollection = null;
-            Exception = null;
-            _sw.Stop();
+            public void Dispose()
+            {
+                info._parameterCollection = null;
+                info.Exception = null;
+                info._sw.Stop();
+            }
         }
+
+        internal Disposer GetDisposer() => new(this);
     }
 }

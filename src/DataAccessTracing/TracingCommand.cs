@@ -116,7 +116,7 @@ namespace DataAccessTracing
 
         public override int ExecuteNonQuery()
         {
-            using var info = BeginExecution();
+            using var _ = BeginExecution(out var info);
             int recordsAffected;
             try
             {
@@ -136,7 +136,7 @@ namespace DataAccessTracing
 
         public override object? ExecuteScalar()
         {
-            using var info = BeginExecution();
+            using var _ = BeginExecution(out var info);
             object? result;
             try
             {
@@ -155,7 +155,7 @@ namespace DataAccessTracing
 
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
-            using var info = BeginExecution();
+            using var _ = BeginExecution(out var info);
             DbDataReader innerReader;
             try
             {
@@ -175,7 +175,7 @@ namespace DataAccessTracing
 #if !NET35
         public override async Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
-            using var info = BeginExecution();
+            using var _ = BeginExecution(out var info);
             int recordsAffected;
             try
             {
@@ -195,7 +195,7 @@ namespace DataAccessTracing
 
         public override async Task<object?> ExecuteScalarAsync(CancellationToken cancellationToken)
         {
-            using var info = BeginExecution();
+            using var _ = BeginExecution(out var info);
             object? result;
             try
             {
@@ -214,7 +214,7 @@ namespace DataAccessTracing
 
         protected override async Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
         {
-            using var info = BeginExecution();
+            using var _ = BeginExecution(out var info);
             DbDataReader innerReader;
             try
             {
@@ -288,13 +288,13 @@ namespace DataAccessTracing
             return _innerCommand;
         }
 
-        internal CommandExecutionInfo BeginExecution([CallerMemberName] string methodName = "")
+        internal CommandExecutionInfo.Disposer BeginExecution(out CommandExecutionInfo info, [CallerMemberName] string methodName = "")
         {
             Used();
-            var info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters, methodName);
+            info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters, methodName);
             DataAccessTrace.TraceHandler.OnCommandExecuting(info);
             info.Begin();
-            return info;
+            return info.GetDisposer();
         }
 
         // dispose check
