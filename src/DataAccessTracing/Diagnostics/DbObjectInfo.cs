@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace DataAccessTracing.Diagnostics
 {
@@ -18,7 +17,7 @@ namespace DataAccessTracing.Diagnostics
         }
 
         private bool _used;
-        public bool IsUsed => _used;
-        public void Used() => _used = true;
+        internal bool IsUsed => _used;
+        internal void Used() => _used = true;
     }
 }
