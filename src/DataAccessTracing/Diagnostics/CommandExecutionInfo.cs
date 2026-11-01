@@ -79,12 +79,6 @@ namespace DataAccessTracing.Diagnostics
                 if (_expandedCommandText is null)
                     GetParameterExpandedCommandText();
 
-                if (_missingParametersInCommandText is not null)
-                {
-                    var details = new InvalidParameterDetails(this, _missingParametersInCommandText.ToArray(), InvalidParameterReason.MissingInCommandText);
-                    DataAccessTrace.TraceHandler.OnInvalidParameterDetected(details);
-                }
-
                 var duplicates = GetParameters()
                     .GroupBy(p => p.ParameterName)
                     .Where(g => g.Count() > 1)
@@ -93,6 +87,12 @@ namespace DataAccessTracing.Diagnostics
                 {
                     var duplicatedParams = duplicates.SelectMany(g => g);
                     var details = new InvalidParameterDetails(this, duplicatedParams.ToArray(), InvalidParameterReason.DuplicateParameterName);
+                    DataAccessTrace.TraceHandler.OnInvalidParameterDetected(details);
+                }
+
+                if (_missingParametersInCommandText is not null)
+                {
+                    var details = new InvalidParameterDetails(this, _missingParametersInCommandText.ToArray(), InvalidParameterReason.MissingInCommandText);
                     DataAccessTrace.TraceHandler.OnInvalidParameterDetected(details);
                 }
             }
@@ -121,6 +121,9 @@ namespace DataAccessTracing.Diagnostics
                     (_missingParametersInCommandText ??= new()).Add(parameter);
                     continue;
                 }
+
+                if (parameter.Direction is not (ParameterDirection.Input or ParameterDirection.InputOutput))
+                    continue;
 
                 var paramValue = parameter switch
                 {
@@ -160,7 +163,7 @@ namespace DataAccessTracing.Diagnostics
             {
                 string direction = p.Direction == ParameterDirection.Input ? "" : " " + p.Direction;
                 sb.AppendLine();
-                sb.Append(null, $"{p.ParameterName}({p.DbType}{direction}): {p.Value}");
+                sb.Append(null, $"{p.ParameterName} ({p.DbType}{direction}): {p.Value}");
             }
 
             var text = sb.ToString();
