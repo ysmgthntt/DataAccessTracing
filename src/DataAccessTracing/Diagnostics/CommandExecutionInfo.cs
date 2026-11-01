@@ -13,7 +13,7 @@ namespace DataAccessTracing.Diagnostics
         public CommandInfo CommandInfo { get; }
         public ConnectionInfo? ConnectionInfo { get; }
         public TransactionInfo? TransactionInfo { get; }
-        public string ExectionMethodName { get; }
+        public string ExecutionMethodName { get; }
         public MethodBase? CallerMethod { get; }
 
         public string CommandText { get; }
@@ -37,13 +37,13 @@ namespace DataAccessTracing.Diagnostics
         private readonly Stopwatch _sw = new();
 
         internal CommandExecutionInfo(CommandInfo info, ConnectionInfo? connectionInfo, TransactionInfo? transactionInfo,
-            string commandText, CommandType commandType, IDataParameterCollection parameterCollection, string methodName)
+            string commandText, CommandType commandType, IDataParameterCollection parameterCollection, string executionMethodName)
         {
             ExecutionId = Guid.NewGuid();
             CommandInfo = info;
             ConnectionInfo = connectionInfo;
             TransactionInfo = transactionInfo;
-            ExectionMethodName = methodName;
+            ExecutionMethodName = executionMethodName;
             CallerMethod = DataAccessTrace.GetCallerMethod(5);
 
             CommandText = commandText;
