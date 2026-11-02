@@ -8,15 +8,13 @@ using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
-    internal sealed class TracingCommandBuilder<TDbProviderFactory> : DbCommandBuilder
-        where TDbProviderFactory : DbProviderFactory
+    internal class TracingCommandBuilder : DbCommandBuilder
     {
         private readonly DbCommandBuilder _innerBuilder;
         private readonly DataAccessTraceHandler _traceHandler;
         private readonly CommandBuilderInfo _info;
 
-        // public for Activator
-        public TracingCommandBuilder(DbCommandBuilder innerBuilder, DataAccessTraceHandler traceHandler)
+        internal TracingCommandBuilder(DbCommandBuilder innerBuilder, DataAccessTraceHandler traceHandler)
         {
             _innerBuilder = innerBuilder;
             _traceHandler = traceHandler;
@@ -185,8 +183,15 @@ namespace DataAccessTracing
             }
             catch { }
         }
+    }
 
-        //
+    internal sealed class TracingCommandBuilder<TDbProviderFactory> : TracingCommandBuilder
+        where TDbProviderFactory : DbProviderFactory
+    {
+        // public for Activator
+        public TracingCommandBuilder(DbCommandBuilder innerBuilder, DataAccessTraceHandler traceHandler) : base(innerBuilder, traceHandler)
+        {
+        }
 
         private static bool _noDeriveParametersMethod;
         private static Action<DbCommand>? _deriveParametersMethodProxy;

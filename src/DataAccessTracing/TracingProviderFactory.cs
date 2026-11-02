@@ -27,14 +27,14 @@ namespace DataAccessTracing
         public TracingProviderFactory(DbProviderFactory innerFactory)
         {
             ArgumentNullException.ThrowIfNull(innerFactory);
+            if (innerFactory is TracingProviderFactory)
+                throw new ArgumentException("innerFactory must not be TracingProviderFactory.", nameof(innerFactory));
             _innerFactory = innerFactory;
         }
 
-        public TracingProviderFactory(DbProviderFactory innerFactory, DataAccessTraceHandler traceHandler)
+        public TracingProviderFactory(DbProviderFactory innerFactory, DataAccessTraceHandler traceHandler) : this(innerFactory)
         {
-            ArgumentNullException.ThrowIfNull(innerFactory);
             ArgumentNullException.ThrowIfNull(traceHandler);
-            _innerFactory = innerFactory;
             TraceHandler = traceHandler;
         }
 
@@ -59,11 +59,20 @@ namespace DataAccessTracing
             return innerCommand is null ? null : new TracingCommand(innerCommand, TraceHandler, null, IsParameterValidationEnabled);
         }
 
+        private bool? _noDeriveParametersMethod;
+
         public override DbCommandBuilder? CreateCommandBuilder()
         {
             var innerBuilder = _innerFactory.CreateCommandBuilder();
             if (innerBuilder is null)
                 return null;
+
+            if (_noDeriveParametersMethod is null)
+                _noDeriveParametersMethod = innerBuilder.GetType().GetMethod("DeriveParameters", BindingFlags.Public | BindingFlags.Static) is null;
+
+            if (_noDeriveParametersMethod.Value)
+                return new TracingCommandBuilder(innerBuilder, TraceHandler);
+
             var t = typeof(TracingCommandBuilder<>).MakeGenericType(_innerFactory.GetType());
             var cb = (DbCommandBuilder?)Activator.CreateInstance(t, innerBuilder, TraceHandler);
             return cb;
