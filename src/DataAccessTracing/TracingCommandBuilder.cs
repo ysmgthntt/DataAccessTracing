@@ -25,6 +25,7 @@ namespace DataAccessTracing
 
         protected override void ApplyParameterInfo(DbParameter parameter, DataRow row, StatementType statementType, bool whereClause)
         {
+            SetDataAdapter();
             _applyParameterInfo ??= CreateInnerBuilderMethodDelegate<Action<DbParameter, DataRow, StatementType, bool>>();
             _applyParameterInfo(parameter, row, statementType, whereClause);
         }
@@ -33,6 +34,7 @@ namespace DataAccessTracing
 
         protected override string GetParameterName(int parameterOrdinal)
         {
+            SetDataAdapter();
             _getParameterNameByOrdinal ??= CreateInnerBuilderMethodDelegate<Func<int, string>>([typeof(int)]);
             return _getParameterNameByOrdinal(parameterOrdinal);
         }
@@ -41,6 +43,7 @@ namespace DataAccessTracing
 
         protected override string GetParameterName(string parameterName)
         {
+            SetDataAdapter();
             _getParameterNameByName ??= CreateInnerBuilderMethodDelegate<Func<string, string>>([typeof(string)]);
             return _getParameterNameByName(parameterName);
         }
@@ -49,6 +52,7 @@ namespace DataAccessTracing
 
         protected override string GetParameterPlaceholder(int parameterOrdinal)
         {
+            SetDataAdapter();
             _getParameterPlaceholder ??= CreateInnerBuilderMethodDelegate<Func<int, string>>();
             return _getParameterPlaceholder(parameterOrdinal);
         }
@@ -57,6 +61,7 @@ namespace DataAccessTracing
 
         protected override void SetRowUpdatingHandler(DbDataAdapter adapter)
         {
+            SetDataAdapter();
             if (adapter is TracingDataAdapter tracingDataAdapter)
                 adapter = tracingDataAdapter.GetInnerDataAdapter();
             _setRowUpdatingHandler ??= CreateInnerBuilderMethodDelegate<Action<DbDataAdapter>>();
@@ -90,6 +95,7 @@ namespace DataAccessTracing
 
         protected override DataTable GetSchemaTable(DbCommand sourceCommand)
         {
+            SetDataAdapter();
             if (sourceCommand is TracingCommand tracingCommand)
                 sourceCommand = tracingCommand.GetInnerCommand();
             _getSchemaTable ??= CreateInnerBuilderMethodDelegate<Func<DbCommand, DataTable>>();
@@ -100,6 +106,7 @@ namespace DataAccessTracing
 
         protected override DbCommand InitializeCommand(DbCommand? command)
         {
+            SetDataAdapter();
             if (command is TracingCommand tracingCommand)
                 command = tracingCommand.GetInnerCommand();
             _initializeCommand ??= CreateInnerBuilderMethodDelegate<Func<DbCommand?, DbCommand>>();
@@ -151,15 +158,24 @@ namespace DataAccessTracing
             MethodInfo mi = types is null
                 ? _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance)!
                 : _innerBuilder.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance, null, types, null)!;
-#if NET
-            var d = mi.CreateDelegate<TDelegate>();
-#elif !NET35
-            var d = (TDelegate)mi.CreateDelegate(typeof(TDelegate));
-#else
-            // TODO
             var d = (TDelegate)Delegate.CreateDelegate(typeof(TDelegate), _innerBuilder, mi);
-#endif
             return d;
+        }
+
+        private void SetDataAdapter()
+        {
+            var da = DataAdapter;
+            if (da is TracingDataAdapter tracingDataAdapter)
+            {
+                var innerDataAdapter = tracingDataAdapter.GetInnerDataAdapter();
+                var innerCommand = (tracingDataAdapter.SelectCommand as TracingCommand)?.GetInnerCommand();
+                innerDataAdapter.SelectCommand = innerCommand;
+                _innerBuilder.DataAdapter = innerDataAdapter;
+            }
+            else
+            {
+                _innerBuilder.DataAdapter = da;
+            }
         }
 
         protected override void Dispose(bool disposing)

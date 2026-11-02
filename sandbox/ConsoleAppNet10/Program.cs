@@ -1,11 +1,12 @@
-﻿using DataAccessTracing;
+﻿using System.Data.Common;
+using DataAccessTracing;
 using Microsoft.Data.SqlClient;
-using System.Data.Common;
 
 Console.WriteLine("Hello, World!");
 
 
 const string providerName = "Microsoft.Data.SqlClient";
+const string connectionString = "Server=(localdb)\\MSSQLLocalDB;Database=DataAccessTracingTestDB;Integrated Security=true";
 const string dummyName = nameof(DummyFactory);
 
 // Type を渡すとインスタンス化されてしまう。
@@ -22,8 +23,18 @@ var dummyFactory = DbProviderFactories.GetFactory(dummyName);
 Console.WriteLine(dummyFactory.ToString());
 
 
-var commandBuilder = factory.CreateCommandBuilder();
-Console.WriteLine(commandBuilder.ToString());
+using var connection = factory.CreateConnection()!;
+connection.ConnectionString = connectionString;
+connection.Open();
+using var command = connection.CreateCommand();
+command.CommandText = "SELECT * FROM TestTable";
+using var da = factory.CreateDataAdapter()!;
+da.SelectCommand = command;
+using var commandBuilder = factory.CreateCommandBuilder()!;
+commandBuilder.DataAdapter = da;
+using var updateCommand = commandBuilder.GetUpdateCommand();
+
+Console.WriteLine(updateCommand.CommandText);
 
 
 class DummyFactory : DbProviderFactory
