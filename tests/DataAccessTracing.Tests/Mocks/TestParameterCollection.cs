@@ -66,5 +66,13 @@ namespace DataAccessTracing.Tests.Mocks
                 throw new ArgumentException("Parameter not found", nameof(parameterName));
             _parameters[index] = value;
         }
+
+#if NET35
+        public override bool IsFixedSize => InnerList.IsFixedSize;
+
+        public override bool IsReadOnly => InnerList.IsReadOnly;
+
+        public override bool IsSynchronized => InnerList.IsSynchronized;
+#endif
     }
 }

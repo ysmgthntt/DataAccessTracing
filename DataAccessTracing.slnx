@@ -7,4 +7,8 @@
   <Folder Name="/src/">
     <Project Path="src/DataAccessTracing/DataAccessTracing.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DataAccessTracing.Tests.Net35/DataAccessTracing.Tests.Net35.csproj" Id="d55ff938-505f-4509-a27d-d172317fdece" />
+    <Project Path="tests/DataAccessTracing.Tests/DataAccessTracing.Tests.csproj" Id="37678cbb-d886-4234-bbc2-7348fa1ca91b" />
+  </Folder>
 </Solution>

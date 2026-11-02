@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net35</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>14.0</LangVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Net.Http" />
+    <Using Remove="System.Threading.Tasks" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\DataAccessTracing.Tests\CommandExecutionInfoTest.cs" Link="CommandExecutionInfoTest.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\DataAccessTraceTest.cs" Link="DataAccessTraceTest.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestParameter.cs" Link="Mocks\TestParameter.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestParameterCollection.cs" Link="Mocks\TestParameterCollection.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestProviderFactory.cs" Link="Mocks\TestProviderFactory.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Polyfill.cs" Link="Polyfill.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <!--
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    -->
+    <PackageReference Include="xunit" Version="1.9.2" />
+    <PackageReference Include="xunit.extensions" Version="1.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="Xunit.Extensions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Mocks\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DataAccessTracing\DataAccessTracing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

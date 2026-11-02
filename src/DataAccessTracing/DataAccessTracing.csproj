@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="DataAccessTracing.Tests" />
+    <InternalsVisibleTo Include="DataAccessTracing.Tests.Net35" />
   </ItemGroup>
 
 </Project>
