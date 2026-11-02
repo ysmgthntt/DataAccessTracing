@@ -6,9 +6,17 @@ namespace DataAccessTracing.Tests.Mocks
     {
         public static readonly TestProviderFactory Instance = new();
 
-        private TestProviderFactory()
-        {
-            DataAccessTraceTest.TestProviderFactoryCreateCount++;
-        }
+        public TestProviderFactory() { }
+
+        public override DbConnection? CreateConnection() => new TestConnection();
+
+        public override DbCommand? CreateCommand() => new TestCommand();
+
+        public override DbDataAdapter CreateDataAdapter() => new TestDataAdapter();
+
+        public bool WithDeriveParameters { get; set; }
+
+        public override DbCommandBuilder? CreateCommandBuilder()
+            => WithDeriveParameters ? new TestCommandBuilderWithDeriveParameters() : new TestCommandBuilder();
     }
 }

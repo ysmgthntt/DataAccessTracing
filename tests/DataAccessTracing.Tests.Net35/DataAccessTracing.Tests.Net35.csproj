@@ -16,10 +16,15 @@
   <ItemGroup>
     <Compile Include="..\DataAccessTracing.Tests\CommandExecutionInfoTest.cs" Link="CommandExecutionInfoTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\DataAccessTraceTest.cs" Link="DataAccessTraceTest.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestCommand.cs" Link="Mocks\TestCommand.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestCommandBuilder.cs" Link="Mocks\TestCommandBuilder.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestConnection.cs" Link="Mocks\TestConnection.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestDataAdapter.cs" Link="Mocks\TestDataAdapter.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestParameter.cs" Link="Mocks\TestParameter.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestParameterCollection.cs" Link="Mocks\TestParameterCollection.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestProviderFactory.cs" Link="Mocks\TestProviderFactory.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Polyfill.cs" Link="Polyfill.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\TracingProviderFactoryTest.cs" Link="TracingProviderFactoryTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,10 +40,6 @@
   <ItemGroup>
     <Using Include="Xunit" />
     <Using Include="Xunit.Extensions" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mocks\" />
   </ItemGroup>
 
   <ItemGroup>
