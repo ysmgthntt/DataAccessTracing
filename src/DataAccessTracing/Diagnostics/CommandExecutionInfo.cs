@@ -35,12 +35,13 @@ namespace DataAccessTracing.Diagnostics
         private IDataParameterCollection? _parameterCollection;
 
         private readonly DataAccessTraceHandler _traceHandler;
+        private readonly bool _isParameterValidationEnabled;
 
         private readonly Stopwatch _sw = new();
 
         internal CommandExecutionInfo(CommandInfo info, ConnectionInfo? connectionInfo, TransactionInfo? transactionInfo,
             string commandText, CommandType commandType, IDataParameterCollection parameterCollection, string executionMethodName,
-            DataAccessTraceHandler traceHandler)
+            DataAccessTraceHandler traceHandler, bool isParameterValidationEnabled)
         {
             ExecutionId = Guid.NewGuid();
             CommandInfo = info;
@@ -54,6 +55,7 @@ namespace DataAccessTracing.Diagnostics
             _parameterCollection = parameterCollection;
 
             _traceHandler = traceHandler;
+            _isParameterValidationEnabled = isParameterValidationEnabled;
         }
 
         private string? _expandedCommandText;
@@ -78,7 +80,7 @@ namespace DataAccessTracing.Diagnostics
         [SuppressMessage("Style", "IDE0305")]
         internal void Begin()
         {
-            if (DataAccessTrace.IsParameterValidationEnabled)
+            if (_isParameterValidationEnabled)
             {
                 // throw されると _parameterCollection は null になるため、 _expandedCommandText, _parameters を作成しておく。
                 if (_expandedCommandText is null)
@@ -121,7 +123,7 @@ namespace DataAccessTracing.Diagnostics
             // 短いパラメータ名が長いパラメータ名を置き換えてしまうため、長いものから処理する。
             foreach (var parameter in parameters.OrderByDescending(p => p.ParameterName.Length))
             {
-                if (IndexOf(sb, parameter.ParameterName) < 0)
+                if (_isParameterValidationEnabled && IndexOf(sb, parameter.ParameterName) < 0)
                 {
                     (_missingParametersInCommandText ??= new()).Add(parameter);
                     continue;

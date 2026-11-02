@@ -14,13 +14,15 @@ namespace DataAccessTracing
         private readonly DataAccessTraceHandler _traceHandler;
         private TracingConnection? _connection;
         private TracingTransaction? _transaction;
+        private bool _isParameterValidationEnabled;
         private readonly CommandInfo _info;
 
-        internal TracingCommand(DbCommand innerCommand, DataAccessTraceHandler traceHandler, TracingConnection? connection)
+        internal TracingCommand(DbCommand innerCommand, DataAccessTraceHandler traceHandler, TracingConnection? connection, bool isParameterValidationEnabled)
         {
             _innerCommand = innerCommand;
             _traceHandler = traceHandler;
             _connection = connection;
+            _isParameterValidationEnabled = isParameterValidationEnabled;
             _info = new();
         }
 
@@ -293,7 +295,8 @@ namespace DataAccessTracing
         internal CommandExecutionInfo.Disposer BeginExecution(out CommandExecutionInfo info, [CallerMemberName] string methodName = "")
         {
             Used();
-            info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters, methodName, _traceHandler);
+            info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters, methodName,
+                _traceHandler, _isParameterValidationEnabled);
             _traceHandler.OnCommandExecuting(info);
             info.Begin();
             return info.GetDisposer();

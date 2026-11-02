@@ -25,7 +25,7 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@C100", Value = "VALUE8", DbType = DbType.Int32 },
                 new TestParameter { ParameterName = "@C10", Value = "VALUE9", DbType = DbType.Int32 },
             ];
-            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "GetParameterExpandedCommandText", _traceHandler);
+            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "GetParameterExpandedCommandText", _traceHandler, false);
             var extendedCommandText = info.GetParameterExpandedCommandText();
             Assert.Equal("SELECT VALUE2, VALUE3, VALUE1, VALUE6, VALUE4, VALUE5, VALUE7, VALUE7, VALUE80, VALUE9, VALUE8", extendedCommandText);
         }
@@ -33,7 +33,6 @@ namespace DataAccessTracing.Tests
         [Fact]
         public void ParameterValidationMissingInCommandText()
         {
-            DataAccessTrace.IsParameterValidationEnabled = true;
             var defaultTraceHandler = new DefaultDataAccessTraceHandler();
             const string sql = "SELECT @P, @PPP, @P, @PPP";
             TestParameterCollection validParams =
@@ -41,7 +40,7 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@P", Value = "VALUE1" },
                 new TestParameter { ParameterName = "@PPP", Value = "VALUE3" },
             ];
-            var validInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, validParams, "ParameterValidationMissingInCommandText", defaultTraceHandler);
+            var validInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, validParams, "ParameterValidationMissingInCommandText", defaultTraceHandler, true);
             validInfo.Begin();
 
             TestParameterCollection invalidParams =
@@ -51,7 +50,7 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@PPP", Value = "VALUE3" },
                 new TestParameter { ParameterName = "@PPPP", Value = "VALUE4" },
             ];
-            var invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationMissingInCommandText", defaultTraceHandler);
+            var invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationMissingInCommandText", defaultTraceHandler, true);
             var ex = Assert.Throws<InvalidParameterException>(() => invalidInfo.Begin());
             Assert.Equal(InvalidParameterReason.MissingInCommandText, ex.Reason);
             Assert.Equal(invalidInfo, ex.ExecutionInfo);
@@ -64,7 +63,6 @@ namespace DataAccessTracing.Tests
         [Fact]
         public void ParameterValidationDuplicateParameterName()
         {
-            DataAccessTrace.IsParameterValidationEnabled = true;
             var defaultTraceHandler = new DefaultDataAccessTraceHandler();
             const string sql = "SELECT @P, @PP, @PPP";
             TestParameterCollection validParams =
@@ -73,7 +71,7 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@PP", Value = "VALUE2" },
                 new TestParameter { ParameterName = "@PPP", Value = "VALUE3" },
             ];
-            var validInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, validParams, "ParameterValidationDuplicateParameterName", defaultTraceHandler);
+            var validInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, validParams, "ParameterValidationDuplicateParameterName", defaultTraceHandler, true);
             validInfo.Begin();
 
             TestParameterCollection invalidParams =
@@ -85,7 +83,7 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@PPP", Value = "VALUE5" },
                 new TestParameter { ParameterName = "@P", Value = "VALUE6" },
             ];
-            var invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationDuplicateParameterName", defaultTraceHandler);
+            var invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationDuplicateParameterName", defaultTraceHandler, true);
             var ex = Assert.Throws<InvalidParameterException>(() => invalidInfo.Begin());
             Assert.Equal(InvalidParameterReason.DuplicateParameterName, ex.Reason);
             Assert.Equal(invalidInfo, ex.ExecutionInfo);
@@ -127,7 +125,7 @@ namespace DataAccessTracing.Tests
         {
             const string sql = "SELECT @P ";
             TestParameterCollection parameters = [new TestParameter { ParameterName = "@P", Value = "value", DbType = dbType }];
-            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "DbTypeTest", _traceHandler);
+            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "DbTypeTest", _traceHandler, false);
             string expected = $"SELECT {(quote ? "'value'" : "value")} ";
             Assert.Equal(expected, info.GetParameterExpandedCommandText());
         }
@@ -141,7 +139,7 @@ namespace DataAccessTracing.Tests
         {
             const string sql = "SELECT @P ";
             TestParameterCollection parameters = [new TestParameter { ParameterName = "@P", Value = "value", Direction = direction }];
-            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "ParameterDirectionTest", _traceHandler);
+            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "ParameterDirectionTest", _traceHandler, false);
             string expected = expand ? "SELECT 'value' " : sql;
             Assert.Equal(expected, info.GetParameterExpandedCommandText());
         }
@@ -153,7 +151,7 @@ namespace DataAccessTracing.Tests
             {
                 const string sql = "SELECT @P ";
                 TestParameterCollection parameters = [new TestParameter { ParameterName = "@P", Value = value, DbType = dbType }];
-                var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "ParameterValueTest", _traceHandler);
+                var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "ParameterValueTest", _traceHandler, false);
                 Assert.Equal(expected, info.GetParameterExpandedCommandText());
             }
             Test("SELECT NULL ", null);
@@ -176,7 +174,7 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@Param3", Value = "VALUE3", DbType = DbType.Object, Direction = ParameterDirection.InputOutput },
                 new TestParameter { ParameterName = "@Param4", Value = "VALUE4", DbType = DbType.Boolean, Direction = ParameterDirection.ReturnValue },
             ];
-            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.StoredProcedure, parameters, "GetStoredProcCommandTextTest", _traceHandler);
+            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.StoredProcedure, parameters, "GetStoredProcCommandTextTest", _traceHandler, false);
             var extendedCommandText = info.GetParameterExpandedCommandText();
             var nl = Environment.NewLine;
             Assert.Equal("TestProc"

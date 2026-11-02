@@ -94,7 +94,7 @@ namespace DataAccessTracing
         protected override DbCommand CreateDbCommand()
         {
             var innerCommand = _innerConnection.CreateCommand();
-            return new TracingCommand(innerCommand, _traceHandler, this);
+            return new TracingCommand(innerCommand, _traceHandler, this, _factory?.IsParameterValidationEnabled ?? DataAccessTrace.IsParameterValidationEnabledDefault);
         }
 
         protected override object? GetService(Type service) => ((IServiceProvider)_innerConnection).GetService(service);

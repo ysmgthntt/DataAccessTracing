@@ -16,6 +16,14 @@ namespace DataAccessTracing
             init;
         }
 
+        private bool? _isParameterValidationEnabled;
+
+        public bool IsParameterValidationEnabled
+        {
+            get => _isParameterValidationEnabled ??= DataAccessTrace.IsParameterValidationEnabledDefault;
+            set => _isParameterValidationEnabled = value;
+        }
+
         public TracingProviderFactory(DbProviderFactory innerFactory)
         {
             ArgumentNullException.ThrowIfNull(innerFactory);
@@ -48,7 +56,7 @@ namespace DataAccessTracing
         public override DbCommand? CreateCommand()
         {
             var innerCommand = _innerFactory.CreateCommand();
-            return innerCommand is null ? null : new TracingCommand(innerCommand, TraceHandler, null);
+            return innerCommand is null ? null : new TracingCommand(innerCommand, TraceHandler, null, IsParameterValidationEnabled);
         }
 
         public override DbCommandBuilder? CreateCommandBuilder()
