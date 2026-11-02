@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using System.Reflection;
+using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
@@ -9,10 +10,24 @@ namespace DataAccessTracing
 
         internal DbProviderFactory InnerFactory => _innerFactory;
 
+        private protected DataAccessTraceHandler TraceHandler
+        {
+            get => field ??= DataAccessTrace.DefaultTraceHandler;
+            init;
+        }
+
         public TracingProviderFactory(DbProviderFactory innerFactory)
         {
             ArgumentNullException.ThrowIfNull(innerFactory);
             _innerFactory = innerFactory;
+        }
+
+        public TracingProviderFactory(DbProviderFactory innerFactory, DataAccessTraceHandler traceHandler)
+        {
+            ArgumentNullException.ThrowIfNull(innerFactory);
+            ArgumentNullException.ThrowIfNull(traceHandler);
+            _innerFactory = innerFactory;
+            TraceHandler = traceHandler;
         }
 
         private protected TracingProviderFactory()
@@ -33,7 +48,7 @@ namespace DataAccessTracing
         public override DbCommand? CreateCommand()
         {
             var innerCommand = _innerFactory.CreateCommand();
-            return innerCommand is null ? null : new TracingCommand(innerCommand, null);
+            return innerCommand is null ? null : new TracingCommand(innerCommand, TraceHandler, null);
         }
 
         public override DbCommandBuilder? CreateCommandBuilder()
@@ -42,14 +57,14 @@ namespace DataAccessTracing
             if (innerBuilder is null)
                 return null;
             var t = typeof(TracingCommandBuilder<>).MakeGenericType(_innerFactory.GetType());
-            var cb = (DbCommandBuilder?)Activator.CreateInstance(t, innerBuilder);
+            var cb = (DbCommandBuilder?)Activator.CreateInstance(t, innerBuilder, TraceHandler);
             return cb;
         }
 
         public override DbConnection? CreateConnection()
         {
             var innerConnection = _innerFactory.CreateConnection();
-            return innerConnection is null ? null : new TracingConnection(innerConnection, this);
+            return innerConnection is null ? null : new TracingConnection(innerConnection, TraceHandler, this);
         }
 
         public override DbConnectionStringBuilder? CreateConnectionStringBuilder() => _innerFactory.CreateConnectionStringBuilder();
@@ -57,7 +72,7 @@ namespace DataAccessTracing
         public override DbDataAdapter? CreateDataAdapter()
         {
             var innerAdapter = _innerFactory.CreateDataAdapter();
-            return innerAdapter is null ? null : new TracingDataAdapter(innerAdapter);
+            return innerAdapter is null ? null : new TracingDataAdapter(innerAdapter, TraceHandler);
         }
 
         public override DbDataSourceEnumerator? CreateDataSourceEnumerator() => _innerFactory.CreateDataSourceEnumerator();
@@ -95,7 +110,7 @@ namespace DataAccessTracing
         public override DbCommandBuilder? CreateCommandBuilder()
         {
             var innerBuilder = InnerFactory.CreateCommandBuilder();
-            return innerBuilder is null ? null : new TracingCommandBuilder<TDbProviderFactory>(innerBuilder);
+            return innerBuilder is null ? null : new TracingCommandBuilder<TDbProviderFactory>(innerBuilder, TraceHandler);
         }
     }
 }

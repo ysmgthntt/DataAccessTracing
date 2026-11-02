@@ -7,14 +7,16 @@ namespace DataAccessTracing
     internal sealed class TracingTransaction : DbTransaction
     {
         private readonly DbTransaction _innerTransaction;
+        private readonly DataAccessTraceHandler _traceHandler;
         private readonly TracingConnection _connection;
         private readonly TransactionInfo _info;
 
         internal TransactionInfo Info => _info;
 
-        public TracingTransaction(DbTransaction innerTransaction, TracingConnection connnection)
+        internal TracingTransaction(DbTransaction innerTransaction, DataAccessTraceHandler traceHandler, TracingConnection connnection)
         {
             _innerTransaction = innerTransaction;
+            _traceHandler = traceHandler;
             _connection = connnection;
 
             // OracleTransaction の IsolationLevel を取得すると NullReferenceException が発生する。
@@ -24,7 +26,7 @@ namespace DataAccessTracing
 
             _info = new TransactionInfo(connnection.Info, isolationLevel);
 
-            DataAccessTrace.TraceHandler.OnBeginTransaction(_info);
+            _traceHandler.OnBeginTransaction(_info);
             _info.Begin();
         }
 
@@ -40,14 +42,14 @@ namespace DataAccessTracing
         {
             _innerTransaction.Commit();
             _info.End();
-            DataAccessTrace.TraceHandler.OnCommitTransaction(_info);
+            _traceHandler.OnCommitTransaction(_info);
         }
 
         public override void Rollback()
         {
             _innerTransaction.Rollback();
             _info.End();
-            DataAccessTrace.TraceHandler.OnRollbackTransaction(_info);
+            _traceHandler.OnRollbackTransaction(_info);
         }
 
         protected override void Dispose(bool disposing)
@@ -64,7 +66,7 @@ namespace DataAccessTracing
             if (disposing)
                 GC.SuppressFinalize(this);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
+                _traceHandler.OnUnusedObjectDetected(_info);
         }
 
         //
@@ -74,14 +76,14 @@ namespace DataAccessTracing
         {
             await _innerTransaction.CommitAsync(cancellationToken).ConfigureAwait(false);
             _info.End();
-            DataAccessTrace.TraceHandler.OnCommitTransaction(_info);
+            _traceHandler.OnCommitTransaction(_info);
         }
 
         public override async Task RollbackAsync(CancellationToken cancellationToken = default)
         {
             await _innerTransaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
             _info.End();
-            DataAccessTrace.TraceHandler.OnRollbackTransaction(_info);
+            _traceHandler.OnRollbackTransaction(_info);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2215")]
@@ -93,7 +95,7 @@ namespace DataAccessTracing
             // dispose check
             GC.SuppressFinalize(this);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
+                _traceHandler.OnUnusedObjectDetected(_info);
         }
 #endif
 
@@ -120,7 +122,7 @@ namespace DataAccessTracing
         {
             try
             {
-                DataAccessTrace.TraceHandler.OnDisposeLeakDetected(_info);
+                _traceHandler.OnDisposeLeakDetected(_info);
             }
             catch { }
         }

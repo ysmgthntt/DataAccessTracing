@@ -1,4 +1,5 @@
 ﻿#if NET35
+#pragma warning disable IDE0130
 namespace System.Runtime.CompilerServices
 {
     [AttributeUsage(AttributeTargets.Parameter, Inherited = false)]
@@ -20,5 +21,10 @@ namespace DataAccessTracing
             public System.Text.StringBuilder Append(IFormatProvider? _, string text) => sb.Append(text);
         }
     }
+}
+#pragma warning disable IDE0130
+namespace System.Runtime.CompilerServices
+{
+    internal sealed class IsExternalInit { }
 }
 #endif

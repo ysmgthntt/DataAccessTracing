@@ -90,12 +90,16 @@ namespace DataAccessTracing
 #endif
         }
 
-        internal static DataAccessTraceHandler TraceHandler { get; private set; } = new DefaultDataAccessTraceHandler();
+        internal static DataAccessTraceHandler DefaultTraceHandler
+        {
+            get => field ??= new DefaultDataAccessTraceHandler();
+            private set;
+        }
 
-        public static void SetTraceHandler(DataAccessTraceHandler traceHandler)
+        public static void SetDefaultTraceHandler(DataAccessTraceHandler traceHandler)
         {
             ArgumentNullException.ThrowIfNull(traceHandler);
-            TraceHandler = traceHandler;
+            DefaultTraceHandler = traceHandler;
         }
 
         public static bool IsParameterValidationEnabled { get; set; }

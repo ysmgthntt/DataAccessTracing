@@ -11,15 +11,17 @@ namespace DataAccessTracing
     internal sealed class TracingCommand : DbCommand
     {
         private readonly DbCommand _innerCommand;
+        private readonly DataAccessTraceHandler _traceHandler;
         private TracingConnection? _connection;
         private TracingTransaction? _transaction;
         private readonly CommandInfo _info;
 
-        internal TracingCommand(DbCommand innerCommand, TracingConnection? connection)
+        internal TracingCommand(DbCommand innerCommand, DataAccessTraceHandler traceHandler, TracingConnection? connection)
         {
             _innerCommand = innerCommand;
+            _traceHandler = traceHandler;
             _connection = connection;
-            _info = new CommandInfo();
+            _info = new();
         }
 
         //
@@ -82,7 +84,7 @@ namespace DataAccessTracing
                     innerFactory = (DbProviderFactory)value.GetType().GetProperty(nameof(DbProviderFactory), BindingFlags.NonPublic | BindingFlags.Instance).GetValue(value, null);
 #endif
                     var tracingFactory = innerFactory is null ? null : new TracingProviderFactory(innerFactory);
-                    _connection = new TracingConnection(value, tracingFactory);
+                    _connection = new TracingConnection(value, _traceHandler, tracingFactory);
                     _innerCommand.Connection = value;
                 }
                 else
@@ -126,11 +128,11 @@ namespace DataAccessTracing
             catch (Exception ex)
             {
                 info.Exception = ex;
-                DataAccessTrace.TraceHandler.OnCommandException(info);
+                _traceHandler.OnCommandException(info);
                 throw;
             }
             info.End();
-            DataAccessTrace.TraceHandler.OnCommandExecuted(info);
+            _traceHandler.OnCommandExecuted(info);
             return recordsAffected;
         }
 
@@ -145,11 +147,11 @@ namespace DataAccessTracing
             catch (Exception ex)
             {
                 info.Exception = ex;
-                DataAccessTrace.TraceHandler.OnCommandException(info);
+                _traceHandler.OnCommandException(info);
                 throw;
             }
             info.End();
-            DataAccessTrace.TraceHandler.OnCommandExecuted(info);
+            _traceHandler.OnCommandExecuted(info);
             return result;
         }
 
@@ -164,12 +166,12 @@ namespace DataAccessTracing
             catch (Exception ex)
             {
                 info.Exception = ex;
-                DataAccessTrace.TraceHandler.OnCommandException(info);
+                _traceHandler.OnCommandException(info);
                 throw;
             }
             info.End();
-            DataAccessTrace.TraceHandler.OnCommandExecuted(info);
-            return new TracingDataReader(innerReader, info.ExecutionId, behavior, _connection);
+            _traceHandler.OnCommandExecuted(info);
+            return new TracingDataReader(innerReader, _traceHandler, info.ExecutionId, behavior, _connection);
         }
 
 #if !NET35
@@ -185,11 +187,11 @@ namespace DataAccessTracing
             catch (Exception ex)
             {
                 info.Exception = ex;
-                DataAccessTrace.TraceHandler.OnCommandException(info);
+                _traceHandler.OnCommandException(info);
                 throw;
             }
             info.End();
-            DataAccessTrace.TraceHandler.OnCommandExecuted(info);
+            _traceHandler.OnCommandExecuted(info);
             return recordsAffected;
         }
 
@@ -204,11 +206,11 @@ namespace DataAccessTracing
             catch (Exception ex)
             {
                 info.Exception = ex;
-                DataAccessTrace.TraceHandler.OnCommandException(info);
+                _traceHandler.OnCommandException(info);
                 throw;
             }
             info.End();
-            DataAccessTrace.TraceHandler.OnCommandExecuted(info);
+            _traceHandler.OnCommandExecuted(info);
             return result;
         }
 
@@ -223,12 +225,12 @@ namespace DataAccessTracing
             catch (Exception ex)
             {
                 info.Exception = ex;
-                DataAccessTrace.TraceHandler.OnCommandException(info);
+                _traceHandler.OnCommandException(info);
                 throw;
             }
             info.End();
-            DataAccessTrace.TraceHandler.OnCommandExecuted(info);
-            return new TracingDataReader(innerReader, info.ExecutionId, behavior, _connection);
+            _traceHandler.OnCommandExecuted(info);
+            return new TracingDataReader(innerReader, _traceHandler, info.ExecutionId, behavior, _connection);
         }
 
 #if !NETFRAMEWORK
@@ -246,7 +248,7 @@ namespace DataAccessTracing
             // dispose check
             GC.SuppressFinalize(this);
             if (!_info.IsUsed && !anyparam)
-                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
+                _traceHandler.OnUnusedObjectDetected(_info);
         }
 #endif
 #endif
@@ -270,7 +272,7 @@ namespace DataAccessTracing
             if (disposing)
                 GC.SuppressFinalize(this);
             if (!_info.IsUsed && !anyparam)
-                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
+                _traceHandler.OnUnusedObjectDetected(_info);
         }
 
         //
@@ -291,8 +293,8 @@ namespace DataAccessTracing
         internal CommandExecutionInfo.Disposer BeginExecution(out CommandExecutionInfo info, [CallerMemberName] string methodName = "")
         {
             Used();
-            info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters, methodName);
-            DataAccessTrace.TraceHandler.OnCommandExecuting(info);
+            info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters, methodName, _traceHandler);
+            _traceHandler.OnCommandExecuting(info);
             info.Begin();
             return info.GetDisposer();
         }
@@ -302,7 +304,7 @@ namespace DataAccessTracing
         {
             try
             {
-                DataAccessTrace.TraceHandler.OnDisposeLeakDetected(_info);
+                _traceHandler.OnDisposeLeakDetected(_info);
             }
             catch { }
         }

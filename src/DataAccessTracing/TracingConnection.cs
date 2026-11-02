@@ -11,15 +11,17 @@ namespace DataAccessTracing
     internal sealed class TracingConnection : DbConnection
     {
         private readonly DbConnection _innerConnection;
+        private readonly DataAccessTraceHandler _traceHandler;
         private readonly TracingProviderFactory? _factory;
 
         private readonly ConnectionInfo _info = new();
 
         internal ConnectionInfo Info => _info;
 
-        public TracingConnection(DbConnection innerConnection, TracingProviderFactory? factory)
+        internal TracingConnection(DbConnection innerConnection, DataAccessTraceHandler traceHandler, TracingProviderFactory? factory)
         {
             _innerConnection = innerConnection;
+            _traceHandler = traceHandler;
             _factory = factory;
 
             if (innerConnection.State == ConnectionState.Open)
@@ -86,13 +88,13 @@ namespace DataAccessTracing
         protected override DbTransaction BeginDbTransaction(System.Data.IsolationLevel isolationLevel)
         {
             var innerTransaction = _innerConnection.BeginTransaction(isolationLevel);
-            return new TracingTransaction(innerTransaction, this);
+            return new TracingTransaction(innerTransaction, _traceHandler, this);
         }
 
         protected override DbCommand CreateDbCommand()
         {
             var innerCommand = _innerConnection.CreateCommand();
-            return new TracingCommand(innerCommand, this);
+            return new TracingCommand(innerCommand, _traceHandler, this);
         }
 
         protected override object? GetService(Type service) => ((IServiceProvider)_innerConnection).GetService(service);
@@ -111,7 +113,7 @@ namespace DataAccessTracing
             if (disposing)
                 GC.SuppressFinalize(this);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
+                _traceHandler.OnUnusedObjectDetected(_info);
         }
 
 #if !NET35
@@ -123,7 +125,7 @@ namespace DataAccessTracing
         protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(System.Data.IsolationLevel isolationLevel, CancellationToken cancellationToken)
         {
             var innerTransaction = await _innerConnection.BeginTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
-            return new TracingTransaction(innerTransaction, this);
+            return new TracingTransaction(innerTransaction, _traceHandler, this);
         }
 
         public override Task ChangeDatabaseAsync(string databaseName, CancellationToken cancellationToken = default)
@@ -139,7 +141,7 @@ namespace DataAccessTracing
             // dispose check
             GC.SuppressFinalize(this);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
+                _traceHandler.OnUnusedObjectDetected(_info);
         }
 #endif
 #endif
@@ -184,14 +186,14 @@ namespace DataAccessTracing
         private void OpenConnection()
         {
             _info.Open();
-            DataAccessTrace.TraceHandler.OnConnectionOpened(_info);
+            _traceHandler.OnConnectionOpened(_info);
             _info.Start();
         }
 
         private void CloseConnection()
         {
             _info.Close();
-            DataAccessTrace.TraceHandler.OnConnectionClosed(_info);
+            _traceHandler.OnConnectionClosed(_info);
         }
 
         // dispose check
@@ -199,7 +201,7 @@ namespace DataAccessTracing
         {
             try
             {
-                DataAccessTrace.TraceHandler.OnDisposeLeakDetected(_info);
+                _traceHandler.OnDisposeLeakDetected(_info);
             }
             catch { }
         }

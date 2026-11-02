@@ -8,11 +8,13 @@ namespace DataAccessTracing
     internal sealed class TracingDataAdapter : DbDataAdapter
     {
         private readonly DbDataAdapter _innerAdapter;
+        private readonly DataAccessTraceHandler _traceHandler;
         private readonly DataAdapterInfo _info;
 
-        internal TracingDataAdapter(DbDataAdapter innerAdapter)
+        internal TracingDataAdapter(DbDataAdapter innerAdapter, DataAccessTraceHandler traceHandler)
         {
             _innerAdapter = innerAdapter;
+            _traceHandler = traceHandler;
             _info = new();
         }
 
@@ -64,7 +66,7 @@ namespace DataAccessTracing
             if (disposing)
                 GC.SuppressFinalize(this);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
+                _traceHandler.OnUnusedObjectDetected(_info);
         }
 
         private static DbCommand? GetInnerCommand(DbCommand? command)
@@ -95,11 +97,11 @@ namespace DataAccessTracing
                 catch (Exception ex)
                 {
                     info.Exception = ex;
-                    DataAccessTrace.TraceHandler.OnCommandException(info);
+                    _traceHandler.OnCommandException(info);
                     throw;
                 }
                 info.End();
-                DataAccessTrace.TraceHandler.OnCommandExecuted(info);
+                _traceHandler.OnCommandExecuted(info);
                 return result;
             }
             else
@@ -150,7 +152,7 @@ namespace DataAccessTracing
         {
             try
             {
-                DataAccessTrace.TraceHandler.OnDisposeLeakDetected(_info);
+                _traceHandler.OnDisposeLeakDetected(_info);
             }
             catch { }
         }

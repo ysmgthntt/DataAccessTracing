@@ -12,12 +12,14 @@ namespace DataAccessTracing
         where TDbProviderFactory : DbProviderFactory
     {
         private readonly DbCommandBuilder _innerBuilder;
+        private readonly DataAccessTraceHandler _traceHandler;
         private readonly CommandBuilderInfo _info;
 
         // public for Activator
-        public TracingCommandBuilder(DbCommandBuilder innerBuilder)
+        public TracingCommandBuilder(DbCommandBuilder innerBuilder, DataAccessTraceHandler traceHandler)
         {
             _innerBuilder = innerBuilder;
+            _traceHandler = traceHandler;
             _info = new();
         }
 
@@ -179,7 +181,7 @@ namespace DataAccessTracing
         {
             try
             {
-                DataAccessTrace.TraceHandler.OnDisposeLeakDetected(_info);
+                _traceHandler.OnDisposeLeakDetected(_info);
             }
             catch { }
         }

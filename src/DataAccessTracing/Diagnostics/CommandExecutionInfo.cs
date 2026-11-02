@@ -34,10 +34,13 @@ namespace DataAccessTracing.Diagnostics
 
         private IDataParameterCollection? _parameterCollection;
 
+        private readonly DataAccessTraceHandler _traceHandler;
+
         private readonly Stopwatch _sw = new();
 
         internal CommandExecutionInfo(CommandInfo info, ConnectionInfo? connectionInfo, TransactionInfo? transactionInfo,
-            string commandText, CommandType commandType, IDataParameterCollection parameterCollection, string executionMethodName)
+            string commandText, CommandType commandType, IDataParameterCollection parameterCollection, string executionMethodName,
+            DataAccessTraceHandler traceHandler)
         {
             ExecutionId = Guid.NewGuid();
             CommandInfo = info;
@@ -49,6 +52,8 @@ namespace DataAccessTracing.Diagnostics
             CommandText = commandText;
             CommandType = commandType;
             _parameterCollection = parameterCollection;
+
+            _traceHandler = traceHandler;
         }
 
         private string? _expandedCommandText;
@@ -87,13 +92,13 @@ namespace DataAccessTracing.Diagnostics
                 {
                     var duplicatedParams = duplicates.SelectMany(g => g);
                     var details = new InvalidParameterDetails(this, duplicatedParams.ToArray(), InvalidParameterReason.DuplicateParameterName);
-                    DataAccessTrace.TraceHandler.OnInvalidParameterDetected(details);
+                    _traceHandler.OnInvalidParameterDetected(details);
                 }
 
                 if (_missingParametersInCommandText is not null)
                 {
                     var details = new InvalidParameterDetails(this, _missingParametersInCommandText.ToArray(), InvalidParameterReason.MissingInCommandText);
-                    DataAccessTrace.TraceHandler.OnInvalidParameterDetected(details);
+                    _traceHandler.OnInvalidParameterDetected(details);
                 }
             }
 

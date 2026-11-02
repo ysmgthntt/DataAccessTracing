@@ -9,14 +9,16 @@ namespace DataAccessTracing
     internal sealed class TracingDataReader : DbDataReader
     {
         private readonly DbDataReader _innerReader;
+        private readonly DataAccessTraceHandler _traceHandler;
         private readonly DataReaderInfo _info;
         // dispose check
         private readonly CommandBehavior _behavior;
         private readonly TracingConnection? _connection;
 
-        internal TracingDataReader(DbDataReader innerReader, Guid executionId, CommandBehavior behavior, TracingConnection? connection)
+        internal TracingDataReader(DbDataReader innerReader, DataAccessTraceHandler traceHandler, Guid executionId, CommandBehavior behavior, TracingConnection? connection)
         {
             _innerReader = innerReader;
+            _traceHandler = traceHandler;
             _info = new DataReaderInfo(executionId);
             // dispose check
             _behavior = behavior;
@@ -131,7 +133,7 @@ namespace DataAccessTracing
                     GC.SuppressFinalize(_connection);
             }
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
+                _traceHandler.OnUnusedObjectDetected(_info);
         }
 
         //
@@ -187,7 +189,7 @@ namespace DataAccessTracing
             if (_behavior == CommandBehavior.CloseConnection && _connection is not null)
                 GC.SuppressFinalize(_connection);
             if (!_info.IsUsed)
-                DataAccessTrace.TraceHandler.OnUnusedObjectDetected(_info);
+                _traceHandler.OnUnusedObjectDetected(_info);
         }
 #endif
 #endif
@@ -201,7 +203,7 @@ namespace DataAccessTracing
         private void CloseDataReader()
         {
             _info.Close(_rowCount);
-            DataAccessTrace.TraceHandler.OnDataReaderClosed(_info);
+            _traceHandler.OnDataReaderClosed(_info);
         }
 
         // dispose check
@@ -209,7 +211,7 @@ namespace DataAccessTracing
         {
             try
             {
-                DataAccessTrace.TraceHandler.OnDisposeLeakDetected(_info);
+                _traceHandler.OnDisposeLeakDetected(_info);
             }
             catch { }
         }
