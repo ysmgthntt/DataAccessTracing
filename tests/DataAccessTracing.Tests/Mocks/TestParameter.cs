@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace DataAccessTracing.Tests.Mocks
 {
-    internal class TestParameter : DbParameter
+    internal sealed class TestParameter : DbParameter
     {
         public override DbType DbType { get; set; }
         public override ParameterDirection Direction { get; set; } = ParameterDirection.Input;
