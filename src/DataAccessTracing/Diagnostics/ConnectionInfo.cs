@@ -14,17 +14,10 @@ namespace DataAccessTracing.Diagnostics
         internal void Open()
         {
             ConnectionId = Guid.NewGuid();
+            _sw.Reset();
         }
 
-        internal void Start()
-        {
-#if !NET35
-            _sw.Restart();
-#else
-            _sw.Reset();
-            _sw.Start();
-#endif
-        }
+        internal void Start() => _sw.Start();
 
         internal void Close() => _sw.Stop();
     }
