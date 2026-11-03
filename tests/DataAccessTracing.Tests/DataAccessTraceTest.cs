@@ -1,5 +1,7 @@
 ﻿using System.Data;
 using System.Data.Common;
+using DataAccessTracing.Diagnostics;
+using DataAccessTracing.Tests.Mocks;
 
 namespace DataAccessTracing.Tests
 {
@@ -17,14 +19,26 @@ namespace DataAccessTracing.Tests
             }
         }
 
+        private sealed class EmptyTraceHandler : DataAccessTraceHandler { }
+
         [Fact]
         public void ReplaceDbProviderFactoriesWithTracingProviders_ShouldReplaceFactory()
         {
+            DataAccessTrace.SetDefaultTraceHandler(new EmptyTraceHandler());
+            DataAccessTrace.IsParameterValidationEnabledDefault = true;
+
+            _ = new TracingProviderFactory(new TestProviderFactory());
+            _ = TracingProviderFactory<TestProviderFactory>.Instance;
+
+            DataAccessTrace.SetDefaultTraceHandler(new EmptyTraceHandler());
+            DataAccessTrace.IsParameterValidationEnabledDefault = true;
+
 #if NET
-            DbProviderFactories.RegisterFactory("TestProviderFactory", typeof(PrivateProviderFactory).AssemblyQualifiedName!);
+            DbProviderFactories.RegisterFactory("PrivateProviderFactory", typeof(PrivateProviderFactory).AssemblyQualifiedName!);
 #endif
             var before = DbProviderFactories.GetFactoryClasses();
             Assert.Equal(0, PrivateProviderFactoryCreateCount);
+
             DataAccessTrace.ReplaceDbProviderFactoriesWithTracingProviders();
 #if NET
             Assert.Equal(1, PrivateProviderFactoryCreateCount);
@@ -45,16 +59,33 @@ namespace DataAccessTracing.Tests
                     Assert.Equal(originalType, ((TracingProviderFactory)factory).InnerFactory.GetType());
                 }
                 Assert.Equal(1, PrivateProviderFactoryCreateCount);
+
+#if NET
+                DbProviderFactories.RegisterFactory($"TestProviderFactory{i}", TestProviderFactory.Instance);
+                foreach (DataRow row in DbProviderFactories.GetFactoryClasses().Rows)
+                {
+                    if (!before.AsEnumerable().Any(r => r["InvariantName"].ToString() == row["InvariantName"].ToString()))
+                    {
+                        var newrow = before.NewRow();
+                        newrow.ItemArray = row.ItemArray;
+                        before.Rows.Add(newrow);
+                        break;
+                    }
+                }
+#endif
+
                 DataAccessTrace.ReplaceDbProviderFactoriesWithTracingProviders();
                 Assert.Equal(1, PrivateProviderFactoryCreateCount);
             }
+
+            Assert.Throws<InvalidOperationException>(() => DataAccessTrace.SetDefaultTraceHandler(new EmptyTraceHandler()));
+            Assert.Throws<InvalidOperationException>(() => DataAccessTrace.IsParameterValidationEnabledDefault = true);
         }
 
         [Fact]
         public void SetDefaultTraceHandler_ThrowsArgumentNullException_WhenHandlerIsNull()
         {
-            var ex = Assert.Throws<ArgumentNullException>(() => DataAccessTrace.SetDefaultTraceHandler(null!));
-            Assert.Equal("traceHandler", ex.ParamName);
+            Assert.Throws<ArgumentNullException>("traceHandler", () => DataAccessTrace.SetDefaultTraceHandler(null!));
         }
     }
 }

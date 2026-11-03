@@ -10,31 +10,21 @@ namespace DataAccessTracing
 
         internal DbProviderFactory InnerFactory => _innerFactory;
 
-        private protected DataAccessTraceHandler TraceHandler
+        private protected DataAccessTraceHandler TraceHandler { get; init; }
+
+        public bool IsParameterValidationEnabled { get; set; } = DataAccessTrace.IsParameterValidationEnabledDefault;
+
+        public TracingProviderFactory(DbProviderFactory innerFactory) : this(innerFactory, DataAccessTrace.DefaultTraceHandler)
         {
-            get => field ??= DataAccessTrace.DefaultTraceHandler;
-            init;
         }
 
-        private bool? _isParameterValidationEnabled;
-
-        public bool IsParameterValidationEnabled
-        {
-            get => _isParameterValidationEnabled ??= DataAccessTrace.IsParameterValidationEnabledDefault;
-            set => _isParameterValidationEnabled = value;
-        }
-
-        public TracingProviderFactory(DbProviderFactory innerFactory)
+        public TracingProviderFactory(DbProviderFactory innerFactory, DataAccessTraceHandler traceHandler)
         {
             ArgumentNullException.ThrowIfNull(innerFactory);
-            if (innerFactory is TracingProviderFactory)
-                throw new ArgumentException("innerFactory must not be TracingProviderFactory.", nameof(innerFactory));
-            _innerFactory = innerFactory;
-        }
-
-        public TracingProviderFactory(DbProviderFactory innerFactory, DataAccessTraceHandler traceHandler) : this(innerFactory)
-        {
             ArgumentNullException.ThrowIfNull(traceHandler);
+            if (innerFactory is TracingProviderFactory)
+                throw new ArgumentException($"{nameof(innerFactory)} must not be {nameof(TracingProviderFactory)}.", nameof(innerFactory));
+            _innerFactory = innerFactory;
             TraceHandler = traceHandler;
         }
 
@@ -43,6 +33,7 @@ namespace DataAccessTracing
             var t = GetInnerFactoryType();
             var fi = t.GetField("Instance", BindingFlags.Public | BindingFlags.Static)!;
             _innerFactory = (DbProviderFactory)fi.GetValue(null)!;
+            TraceHandler = DataAccessTrace.DefaultTraceHandler;
         }
 
         private protected virtual Type GetInnerFactoryType() => throw new NotImplementedException();

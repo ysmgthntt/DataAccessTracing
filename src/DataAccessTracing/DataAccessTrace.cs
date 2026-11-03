@@ -8,8 +8,12 @@ namespace DataAccessTracing
 {
     public static class DataAccessTrace
     {
+        private static bool _replaced;
+
         public static void ReplaceDbProviderFactoriesWithTracingProviders()
         {
+            // DbProviderFactories.RegisterFactory で追加できるので、 何度でも実行できるように _replaced はチェックしない。
+
 #if NETFRAMEWORK
             // Force Creation
             _ = DbProviderFactories.GetFactoryClasses();
@@ -88,6 +92,8 @@ namespace DataAccessTracing
                 DbProviderFactories.RegisterFactory(providerName, tracingFactory);
             }
 #endif
+
+            _replaced = true;
         }
 
         internal static DataAccessTraceHandler DefaultTraceHandler
@@ -99,10 +105,21 @@ namespace DataAccessTracing
         public static void SetDefaultTraceHandler(DataAccessTraceHandler traceHandler)
         {
             ArgumentNullException.ThrowIfNull(traceHandler);
+            if (_replaced)
+                throw new InvalidOperationException($"{nameof(SetDefaultTraceHandler)} must be called before {nameof(ReplaceDbProviderFactoriesWithTracingProviders)}.");
             DefaultTraceHandler = traceHandler;
         }
 
-        public static bool IsParameterValidationEnabledDefault { get; set; }
+        public static bool IsParameterValidationEnabledDefault
+        {
+            get;
+            set
+            {
+                if (_replaced)
+                    throw new InvalidOperationException($"{nameof(IsParameterValidationEnabledDefault)} must be set before {nameof(ReplaceDbProviderFactoriesWithTracingProviders)}.");
+                field = value;
+            }
+        }
 
         internal static MethodBase? GetCallerMethod(int startFrameCount)
         {

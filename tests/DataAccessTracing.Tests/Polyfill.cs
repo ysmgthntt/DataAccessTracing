@@ -6,3 +6,21 @@ namespace System.Diagnostics.CodeAnalysis
     { }
 }
 #endif
+#if NET35
+namespace DataAccessTracing.Tests
+{
+    internal static class AssertExtensions
+    {
+        extension(Assert)
+        {
+            public static Exception Throws<T>(string? paramName, Assert.ThrowsDelegate testCode)
+                where T : ArgumentException
+            {
+                var ex = Assert.Throws<T>(testCode);
+                Assert.Equal(paramName, ex.ParamName);
+                return ex;
+            }
+        }
+    }
+}
+#endif
