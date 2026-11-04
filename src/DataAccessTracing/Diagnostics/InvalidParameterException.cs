@@ -8,8 +8,9 @@
         public ParameterInfo[] InvalidParameters => _details.InvalidParameters;
         public InvalidParameterReason Reason => _details.Reason;
 
-        internal InvalidParameterException(InvalidParameterDetails details)
+        public InvalidParameterException(InvalidParameterDetails details)
         {
+            ArgumentNullException.ThrowIfNull(details);
             _details = details;
         }
     }
