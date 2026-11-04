@@ -86,7 +86,7 @@ namespace DataAccessTracing_Tests
 
             for (int i = 0; i < 3; i++)
             {
-                delay = 1000 + (i * 500);
+                delay = 500 + (i * 200);
                 tracingConnection.Open();
                 Assert.Equal(i + 1, openCount);
                 Assert.Equal(i, closeCount);
@@ -141,7 +141,7 @@ namespace DataAccessTracing_Tests
 
             for (int i = 0; i < 3; i++)
             {
-                delay = 1000 + (i * 500);
+                delay = 600 + (i * 200);
                 await tracingConnection.OpenAsync();
                 Assert.Equal(i + 1, openCount);
                 Assert.Equal(i, closeCount);
