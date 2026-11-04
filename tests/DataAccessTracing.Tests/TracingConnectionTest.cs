@@ -217,8 +217,8 @@ namespace DataAccessTracing_Tests
                     beginTransCount++;
                 },
             };
-            using var c = new TestConnection();
-            using var tracingConnection = new TracingConnection(c, traceHandler, null);
+            await using var c = new TestConnection();
+            await using var tracingConnection = new TracingConnection(c, traceHandler, null);
             tracingConnection.ConnectionString = "test";
             await tracingConnection.OpenAsync();
             Assert.Equal(0, beginTransCount);
