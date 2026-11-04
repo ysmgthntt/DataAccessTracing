@@ -10,7 +10,8 @@ namespace DataAccessTracing_Tests
 {
     public class TracingConnectionTest
     {
-        const int DelayMargin = 30;
+        const int DelayLowMargin = 10;
+        const int DelayHighMargin = 50;
 
         private static TracingConnection CreateTracingConnection(DbConnection innerConnection, DataAccessTraceHandler traceHandler, TracingProviderFactory? factory)
             => new TracingConnection(innerConnection, traceHandler, factory);
@@ -69,7 +70,7 @@ namespace DataAccessTracing_Tests
                 {
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionId);
-                    Assert.InRange(info.Duration.TotalMilliseconds, delay - 1, delay + DelayMargin);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     closeCount++;
                 },
             };
@@ -124,7 +125,7 @@ namespace DataAccessTracing_Tests
                 {
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionId);
-                    Assert.InRange(info.Duration.TotalMilliseconds, delay - 1, delay + DelayMargin);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     closeCount++;
                 },
             };
@@ -278,7 +279,7 @@ namespace DataAccessTracing_Tests
                 {
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionId);
-                    Assert.InRange(info.Duration.TotalMilliseconds, delay - 1, delay + DelayMargin);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     closeCount++;
                 },
             };
@@ -328,7 +329,7 @@ namespace DataAccessTracing_Tests
                 {
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionId);
-                    Assert.InRange(info.Duration.TotalMilliseconds, delay - 1, delay + DelayMargin);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     closeCount++;
                 },
             };

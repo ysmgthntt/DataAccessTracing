@@ -1,9 +1,10 @@
 ﻿using System.Data;
 using System.Data.Common;
+using DataAccessTracing.Tests.Mocks;
 
 namespace DataAccessTracing.Tests.Mocks
 {
-    internal sealed class TestTransaction : DbTransaction
+    internal class TestTransaction : DbTransaction
     {
         public TestTransaction(TestConnection connection, IsolationLevel isolationLevel)
         {
@@ -52,3 +53,12 @@ namespace DataAccessTracing.Tests.Mocks
         }
     }
 }
+#if NETFRAMEWORK
+namespace System.Data.OracleClient
+{
+    internal sealed class OracleTransaction(TestConnection connection, IsolationLevel isolationLevel) : TestTransaction(connection, isolationLevel)
+    {
+        public override IsolationLevel IsolationLevel => throw new InvalidOperationException();
+    }
+}
+#endif

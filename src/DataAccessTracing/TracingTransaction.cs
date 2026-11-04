@@ -19,10 +19,14 @@ namespace DataAccessTracing
             _traceHandler = traceHandler;
             _connection = connnection;
 
+#if !NETFRAMEWORK
+            var isolationLevel = _innerTransaction.IsolationLevel;
+#else
             // OracleTransaction の IsolationLevel を取得すると NullReferenceException が発生する。
-            IsolationLevel isolationLevel
+            var isolationLevel
                 = _innerTransaction.GetType().FullName == "System.Data.OracleClient.OracleTransaction" ? IsolationLevel.ReadCommitted
                 : _innerTransaction.IsolationLevel;
+#endif
 
             _info = new TransactionInfo(connnection.Info, isolationLevel);
 
