@@ -23,8 +23,12 @@
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestParameter.cs" Link="Mocks\TestParameter.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestParameterCollection.cs" Link="Mocks\TestParameterCollection.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestProviderFactory.cs" Link="Mocks\TestProviderFactory.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestTraceHandler.cs" Link="Mocks\TestTraceHandler.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestTransaction.cs" Link="Mocks\TestTransaction.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Polyfill.cs" Link="Polyfill.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\TracingConnectionTest.cs" Link="TracingConnectionTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingProviderFactoryTest.cs" Link="TracingProviderFactoryTest.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\TracingTransactionTest.cs" Link="TracingTransactionTest.cs" />
   </ItemGroup>
 
   <ItemGroup>

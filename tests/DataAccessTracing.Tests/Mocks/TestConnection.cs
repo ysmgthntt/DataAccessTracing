@@ -6,6 +6,14 @@ namespace DataAccessTracing.Tests.Mocks
 {
     internal sealed class TestConnection : DbConnection
     {
+        public TestConnection() { }
+
+        public TestConnection(bool open)
+        {
+            if (open)
+                _state = ConnectionState.Open;
+        }
+
 #if NET
         [AllowNull]
 #endif
@@ -26,7 +34,8 @@ namespace DataAccessTracing.Tests.Mocks
         {
             var oldState = _state;
             _state = ConnectionState.Closed;
-            OnStateChange(new StateChangeEventArgs(oldState, _state));
+            if (_state != oldState)
+                OnStateChange(new StateChangeEventArgs(oldState, _state));
         }
 
         public override void Open()
@@ -38,7 +47,8 @@ namespace DataAccessTracing.Tests.Mocks
 
             var oldState = _state;
             _state = ConnectionState.Open;
-            OnStateChange(new StateChangeEventArgs(oldState, _state));
+            if (_state != oldState)
+                OnStateChange(new StateChangeEventArgs(oldState, _state));
         }
 
         protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
@@ -46,9 +56,22 @@ namespace DataAccessTracing.Tests.Mocks
             if (_state != ConnectionState.Open)
                 throw new InvalidOperationException();
 
-            return null!;
+            return new TestTransaction(this, isolationLevel);
         }
 
         protected override DbCommand CreateDbCommand() => new TestCommand() { Connection = this };
+
+        public bool IsDisposed { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Close();
+                IsDisposed = true;
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }

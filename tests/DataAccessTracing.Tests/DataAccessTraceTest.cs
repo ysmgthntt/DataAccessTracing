@@ -45,6 +45,9 @@ namespace DataAccessTracing.Tests
 #else
             Assert.Equal(0, PrivateProviderFactoryCreateCount);
 #endif
+            Assert.Throws<InvalidOperationException>(() => DataAccessTrace.SetDefaultTraceHandler(new EmptyTraceHandler()));
+            Assert.Throws<InvalidOperationException>(() => DataAccessTrace.IsParameterValidationEnabledDefault = true);
+
             for (int i = 0; i < 3; i++)
             {
                 var after = DbProviderFactories.GetFactoryClasses();
@@ -77,9 +80,6 @@ namespace DataAccessTracing.Tests
                 DataAccessTrace.ReplaceDbProviderFactoriesWithTracingProviders();
                 Assert.Equal(1, PrivateProviderFactoryCreateCount);
             }
-
-            Assert.Throws<InvalidOperationException>(() => DataAccessTrace.SetDefaultTraceHandler(new EmptyTraceHandler()));
-            Assert.Throws<InvalidOperationException>(() => DataAccessTrace.IsParameterValidationEnabledDefault = true);
         }
 
         [Fact]

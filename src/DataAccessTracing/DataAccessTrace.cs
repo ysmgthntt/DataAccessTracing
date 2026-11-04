@@ -129,8 +129,11 @@ namespace DataAccessTracing
                 var method = trace.GetFrame(index)?.GetMethod();
                 if (method is null)
                     continue;
+                //if (method.IsDefined(typeof(CompilerGeneratedAttribute), false) || declaringType.IsDefined(typeof(CompilerGeneratedAttribute), false))
+                //    continue;
                 var typeName = method.DeclaringType?.FullName;
                 if (typeName is not null &&
+                    !typeName.Contains('<') &&
                     !typeName.StartsWith("DataAccessTracing.", StringComparison.Ordinal) &&
                     !typeName.StartsWith("System.", StringComparison.Ordinal) &&
                     !typeName.StartsWith("Microsoft.", StringComparison.Ordinal))
