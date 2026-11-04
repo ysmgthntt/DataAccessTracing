@@ -1,12 +1,9 @@
 ﻿using System.Reflection;
 using DataAccessTracing;
-using DataAccessTracing.Tests;
 using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
-#pragma warning disable IDE0130
-
-namespace DataAccessTracing_Tests
+namespace DataAccessTracing.Tests
 {
     public class TracingProviderFactoryTest
     {

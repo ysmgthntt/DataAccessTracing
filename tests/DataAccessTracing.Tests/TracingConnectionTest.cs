@@ -1,15 +1,13 @@
 ﻿using System.Data;
 using System.Data.Common;
 using System.Reflection;
-using DataAccessTracing;
 using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
 #pragma warning disable CA2007
 #pragma warning disable IDE0017
-#pragma warning disable IDE0130
 
-namespace DataAccessTracing_Tests
+namespace DataAccessTracing.Tests
 {
     public class TracingConnectionTest
     {

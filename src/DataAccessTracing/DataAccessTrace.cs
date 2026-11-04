@@ -123,18 +123,21 @@ namespace DataAccessTracing
 
         internal static MethodBase? GetCallerMethod(int startFrameCount)
         {
+            var thisAssembly = typeof(DataAccessTrace).Assembly;
             var trace = new StackTrace();
             for (int index = startFrameCount; index < trace.FrameCount; index++)
             {
                 var method = trace.GetFrame(index)?.GetMethod();
-                if (method is null)
+                if (method is null or { DeclaringType: null })
+                    continue;
+                var declaringType = method.DeclaringType;
+                if (declaringType.Assembly == thisAssembly)
                     continue;
                 //if (method.IsDefined(typeof(CompilerGeneratedAttribute), false) || declaringType.IsDefined(typeof(CompilerGeneratedAttribute), false))
                 //    continue;
-                var typeName = method.DeclaringType?.FullName;
+                var typeName = declaringType.FullName;
                 if (typeName is not null &&
                     !typeName.Contains('<') &&
-                    !typeName.StartsWith("DataAccessTracing.", StringComparison.Ordinal) &&
                     !typeName.StartsWith("System.", StringComparison.Ordinal) &&
                     !typeName.StartsWith("Microsoft.", StringComparison.Ordinal))
                 {
