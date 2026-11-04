@@ -14,15 +14,13 @@ namespace DataAccessTracing.Tests.Mocks
 
         public override int Add(object value)
         {
-            {
-                if (!(value is TestParameter param))
-                    throw new ArgumentException();
+            if (value is not TestParameter param)
+                throw new ArgumentException("value must not be a TestParameter", nameof(value));
 
-                //if (Contains(param.ParameterName))
-                //    throw new ArgumentException("duplicate", param.ParameterName);
+            //if (Contains(param.ParameterName))
+            //    throw new ArgumentException("duplicate", param.ParameterName);
 
-                return InnerList.Add(value);
-            }
+            return InnerList.Add(value);
         }
 
         public override void AddRange(Array values)
