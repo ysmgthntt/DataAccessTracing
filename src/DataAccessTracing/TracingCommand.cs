@@ -14,7 +14,7 @@ namespace DataAccessTracing
         private readonly DataAccessTraceHandler _traceHandler;
         private TracingConnection? _connection;
         private TracingTransaction? _transaction;
-        private bool _isParameterValidationEnabled;
+        private readonly bool _isParameterValidationEnabled;
         private readonly CommandInfo _info;
 
         internal TracingCommand(DbCommand innerCommand, DataAccessTraceHandler traceHandler, TracingConnection? connection, bool isParameterValidationEnabled)
