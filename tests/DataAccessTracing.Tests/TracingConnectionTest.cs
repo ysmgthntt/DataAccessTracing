@@ -186,8 +186,8 @@ namespace DataAccessTracing_Tests
             {
                 using var trans = tracingConnection.BeginTransaction();
                 Assert.Equal(1, beginTransCount);
-                Assert.IsType<TracingTransaction>(trans);
-                Assert.IsType<TestTransaction>(((TracingTransaction)trans).InnerTransaction);
+                var tracingTrans = Assert.IsType<TracingTransaction>(trans);
+                Assert.IsType<TestTransaction>(tracingTrans.InnerTransaction);
                 Assert.Equal(System.Data.IsolationLevel.Unspecified, trans.IsolationLevel);
             }
             {
@@ -226,8 +226,8 @@ namespace DataAccessTracing_Tests
             {
                 await using var trans = await tracingConnection.BeginTransactionAsync();
                 Assert.Equal(1, beginTransCount);
-                Assert.IsType<TracingTransaction>(trans);
-                Assert.IsType<TestTransaction>(((TracingTransaction)trans).InnerTransaction);
+                var tracingTrans = Assert.IsType<TracingTransaction>(trans);
+                Assert.IsType<TestTransaction>(tracingTrans.InnerTransaction);
                 Assert.Equal(System.Data.IsolationLevel.Unspecified, trans.IsolationLevel);
             }
             {
@@ -246,12 +246,12 @@ namespace DataAccessTracing_Tests
             var traceHandler = new TestTraceHandler();
             using var c = new TestConnection();
             using var tracingConnection = new TracingConnection(c, traceHandler, null);
-            using var tracingCommand = tracingConnection.CreateCommand();
-            Assert.IsType<TracingCommand>(tracingCommand);
-            var innerCommand = ((TracingCommand)tracingCommand)?.GetInnerCommand();
+            using var command = tracingConnection.CreateCommand();
+            var tracingCommand = Assert.IsType<TracingCommand>(command);
+            var innerCommand = tracingCommand.GetInnerCommand();
             Assert.IsType<TestCommand>(innerCommand);
             Assert.Equal(c, innerCommand?.Connection);
-            CommandInfo? info = (CommandInfo?)tracingCommand?.GetType().GetField("_info", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(tracingCommand);
+            CommandInfo? info = (CommandInfo?)tracingCommand.GetType().GetField("_info", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(tracingCommand);
             Assert.Equal(nameof(TracingConnectionTest), info?.CreationMethod?.DeclaringType?.Name);
             Assert.Equal(nameof(CreateCommand), info?.CreationMethod?.Name);
         }

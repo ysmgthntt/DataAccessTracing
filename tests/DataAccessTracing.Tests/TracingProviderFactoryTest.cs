@@ -20,9 +20,9 @@ namespace DataAccessTracing_Tests
         {
             var factory = new TracingProviderFactory(TestProviderFactory.Instance);
             var connection = factory.CreateConnection();
-            Assert.IsType<TracingConnection>(connection);
-            Assert.IsType<TestConnection>(((TracingConnection?)connection)?.InnerConnection);
-            var info = ((TracingConnection?)connection)?.Info;
+            var tracingConnection = Assert.IsType<TracingConnection>(connection);
+            Assert.IsType<TestConnection>(tracingConnection.InnerConnection);
+            var info = tracingConnection.Info;
             Assert.Equal(nameof(TracingProviderFactoryTest), info?.CreationMethod?.DeclaringType?.Name);
             Assert.Equal(nameof(CreateConnection), info?.CreationMethod?.Name);
         }
@@ -32,9 +32,9 @@ namespace DataAccessTracing_Tests
         {
             var factory = new TracingProviderFactory(TestProviderFactory.Instance);
             var command = factory.CreateCommand();
-            Assert.IsType<TracingCommand>(command);
-            Assert.IsType<TestCommand>(((TracingCommand?)command)?.GetInnerCommand());
-            CommandInfo? info = (CommandInfo?)command?.GetType().GetField("_info", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(command);
+            var tracingCommand = Assert.IsType<TracingCommand>(command);
+            Assert.IsType<TestCommand>(tracingCommand.GetInnerCommand());
+            CommandInfo? info = (CommandInfo?)tracingCommand.GetType().GetField("_info", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(tracingCommand);
             Assert.Equal(nameof(TracingProviderFactoryTest), info?.CreationMethod?.DeclaringType?.Name);
             Assert.Equal(nameof(CreateCommand), info?.CreationMethod?.Name);
         }
@@ -44,9 +44,9 @@ namespace DataAccessTracing_Tests
         {
             var factory = new TracingProviderFactory(TestProviderFactory.Instance);
             var dataAdapter = factory.CreateDataAdapter();
-            Assert.IsType<TracingDataAdapter>(dataAdapter);
-            Assert.IsType<TestDataAdapter>(((TracingDataAdapter?)dataAdapter)?.GetInnerDataAdapter());
-            DataAdapterInfo? info = (DataAdapterInfo?)dataAdapter?.GetType().GetField("_info", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(dataAdapter);
+            var tracingDataAdapter = Assert.IsType<TracingDataAdapter>(dataAdapter);
+            Assert.IsType<TestDataAdapter>(tracingDataAdapter.GetInnerDataAdapter());
+            DataAdapterInfo? info = (DataAdapterInfo?)tracingDataAdapter.GetType().GetField("_info", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(tracingDataAdapter);
             Assert.Equal(nameof(TracingProviderFactoryTest), info?.CreationMethod?.DeclaringType?.Name);
             Assert.Equal(nameof(CreateDataAdapter), info?.CreationMethod?.Name);
         }

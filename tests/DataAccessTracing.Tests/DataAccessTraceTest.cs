@@ -56,10 +56,10 @@ namespace DataAccessTracing.Tests
                 {
                     var name = row["InvariantName"].ToString()!;
                     var factory = DbProviderFactories.GetFactory(name);
-                    Assert.IsAssignableFrom<TracingProviderFactory>(factory);
+                    var tracingFactory = Assert.IsAssignableFrom<TracingProviderFactory>(factory);
                     var typeName = row["AssemblyQualifiedName"].ToString()!;
                     Type originalType = Type.GetType(typeName)!;
-                    Assert.Equal(originalType, ((TracingProviderFactory)factory).InnerFactory.GetType());
+                    Assert.Equal(originalType, tracingFactory.InnerFactory.GetType());
                 }
                 Assert.Equal(1, PrivateProviderFactoryCreateCount);
 
