@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using System.Data;
+using System.Data.Common;
 using System.Reflection;
 using DataAccessTracing;
 using DataAccessTracing.Diagnostics;
@@ -191,12 +192,12 @@ namespace DataAccessTracing_Tests
                 Assert.Equal(1, beginTransCount);
                 var tracingTrans = Assert.IsType<TracingTransaction>(trans);
                 Assert.IsType<TestTransaction>(tracingTrans.InnerTransaction);
-                Assert.Equal(System.Data.IsolationLevel.Unspecified, trans.IsolationLevel);
+                Assert.Equal(IsolationLevel.Unspecified, trans.IsolationLevel);
             }
             {
-                using var trans = tracingConnection.BeginTransaction(System.Data.IsolationLevel.Snapshot);
+                using var trans = tracingConnection.BeginTransaction(IsolationLevel.Snapshot);
                 Assert.Equal(2, beginTransCount);
-                Assert.Equal(System.Data.IsolationLevel.Snapshot, trans.IsolationLevel);
+                Assert.Equal(IsolationLevel.Snapshot, trans.IsolationLevel);
             }
         }
 
@@ -231,12 +232,12 @@ namespace DataAccessTracing_Tests
                 Assert.Equal(1, beginTransCount);
                 var tracingTrans = Assert.IsType<TracingTransaction>(trans);
                 Assert.IsType<TestTransaction>(tracingTrans.InnerTransaction);
-                Assert.Equal(System.Data.IsolationLevel.Unspecified, trans.IsolationLevel);
+                Assert.Equal(IsolationLevel.Unspecified, trans.IsolationLevel);
             }
             {
-                await using var trans = await tracingConnection.BeginTransactionAsync(System.Data.IsolationLevel.Snapshot, TestContext.Current.CancellationToken);
+                await using var trans = await tracingConnection.BeginTransactionAsync(IsolationLevel.Snapshot, TestContext.Current.CancellationToken);
                 Assert.Equal(2, beginTransCount);
-                Assert.Equal(System.Data.IsolationLevel.Snapshot, trans.IsolationLevel);
+                Assert.Equal(IsolationLevel.Snapshot, trans.IsolationLevel);
             }
         }
 #else
