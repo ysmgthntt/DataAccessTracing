@@ -71,7 +71,7 @@ namespace DataAccessTracing_Tests
             Assert.Equal(1, beginTransCount);
             Assert.Equal(0, commitCount);
 #if !NET35
-            await Task.Delay(delay);
+            await Task.Delay(delay, TestContext.Current.CancellationToken);
 #else
             Thread.Sleep(delay);
 #endif
@@ -109,15 +109,15 @@ namespace DataAccessTracing_Tests
             await using var c = new TestConnection();
             await using var tracingConnection = new TracingConnection(c, traceHandler, null);
             tracingConnection.ConnectionString = "test";
-            await tracingConnection.OpenAsync();
+            await tracingConnection.OpenAsync(TestContext.Current.CancellationToken);
             Assert.Equal(0, beginTransCount);
             Assert.Equal(0, commitCount);
             connectionId = tracingConnection.Info.ConnectionId;
-            await using var trans = await tracingConnection.BeginTransactionAsync();
+            await using var trans = await tracingConnection.BeginTransactionAsync(TestContext.Current.CancellationToken);
             Assert.Equal(1, beginTransCount);
             Assert.Equal(0, commitCount);
-            await Task.Delay(delay);
-            await trans.CommitAsync();
+            await Task.Delay(delay, TestContext.Current.CancellationToken);
+            await trans.CommitAsync(TestContext.Current.CancellationToken);
             Assert.Equal(1, beginTransCount);
             Assert.Equal(1, commitCount);
         }
@@ -165,7 +165,7 @@ namespace DataAccessTracing_Tests
             Assert.Equal(1, beginTransCount);
             Assert.Equal(0, rollbackCount);
 #if !NET35
-            await Task.Delay(delay);
+            await Task.Delay(delay, TestContext.Current.CancellationToken);
 #else
             Thread.Sleep(delay);
 #endif
@@ -203,15 +203,15 @@ namespace DataAccessTracing_Tests
             await using var c = new TestConnection();
             await using var tracingConnection = new TracingConnection(c, traceHandler, null);
             tracingConnection.ConnectionString = "test";
-            await tracingConnection.OpenAsync();
+            await tracingConnection.OpenAsync(TestContext.Current.CancellationToken);
             Assert.Equal(0, beginTransCount);
             Assert.Equal(0, rollbackCount);
             connectionId = tracingConnection.Info.ConnectionId;
-            await using var trans = await tracingConnection.BeginTransactionAsync();
+            await using var trans = await tracingConnection.BeginTransactionAsync(TestContext.Current.CancellationToken);
             Assert.Equal(1, beginTransCount);
             Assert.Equal(0, rollbackCount);
-            await Task.Delay(delay);
-            await trans.RollbackAsync();
+            await Task.Delay(delay, TestContext.Current.CancellationToken);
+            await trans.RollbackAsync(TestContext.Current.CancellationToken);
             Assert.Equal(1, beginTransCount);
             Assert.Equal(1, rollbackCount);
         }
@@ -253,7 +253,7 @@ namespace DataAccessTracing_Tests
             await using var tracingConnection = new TracingConnection(c, traceHandler, null);
             tracingConnection.ConnectionString = "test";
             tracingConnection.Open();
-            var trans = await tracingConnection.BeginTransactionAsync();
+            var trans = await tracingConnection.BeginTransactionAsync(TestContext.Current.CancellationToken);
             var innerTrans = (TestTransaction)((TracingTransaction)trans).InnerTransaction;
             Assert.False(innerTrans.IsDisposed);
             await trans.DisposeAsync();

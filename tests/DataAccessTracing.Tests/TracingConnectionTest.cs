@@ -92,7 +92,7 @@ namespace DataAccessTracing_Tests
                 Assert.Equal(i, closeCount);
 
 #if !NET35
-                await Task.Delay(delay);
+                await Task.Delay(delay, TestContext.Current.CancellationToken);
 #else
                 Thread.Sleep(delay);
 #endif
@@ -142,11 +142,11 @@ namespace DataAccessTracing_Tests
             for (int i = 0; i < 3; i++)
             {
                 delay = 600 + (i * 200);
-                await tracingConnection.OpenAsync();
+                await tracingConnection.OpenAsync(TestContext.Current.CancellationToken);
                 Assert.Equal(i + 1, openCount);
                 Assert.Equal(i, closeCount);
 
-                await Task.Delay(delay);
+                await Task.Delay(delay, TestContext.Current.CancellationToken);
 
 #if NET
                 await tracingConnection.CloseAsync();
@@ -223,18 +223,18 @@ namespace DataAccessTracing_Tests
             await using var c = new TestConnection();
             await using var tracingConnection = new TracingConnection(c, traceHandler, null);
             tracingConnection.ConnectionString = "test";
-            await tracingConnection.OpenAsync();
+            await tracingConnection.OpenAsync(TestContext.Current.CancellationToken);
             Assert.Equal(0, beginTransCount);
             connectionId = tracingConnection.Info.ConnectionId;
             {
-                await using var trans = await tracingConnection.BeginTransactionAsync();
+                await using var trans = await tracingConnection.BeginTransactionAsync(TestContext.Current.CancellationToken);
                 Assert.Equal(1, beginTransCount);
                 var tracingTrans = Assert.IsType<TracingTransaction>(trans);
                 Assert.IsType<TestTransaction>(tracingTrans.InnerTransaction);
                 Assert.Equal(System.Data.IsolationLevel.Unspecified, trans.IsolationLevel);
             }
             {
-                await using var trans = await tracingConnection.BeginTransactionAsync(System.Data.IsolationLevel.Snapshot);
+                await using var trans = await tracingConnection.BeginTransactionAsync(System.Data.IsolationLevel.Snapshot, TestContext.Current.CancellationToken);
                 Assert.Equal(2, beginTransCount);
                 Assert.Equal(System.Data.IsolationLevel.Snapshot, trans.IsolationLevel);
             }
@@ -300,7 +300,7 @@ namespace DataAccessTracing_Tests
             Assert.Equal(0, closeCount);
 
 #if !NET35
-            await Task.Delay(delay);
+            await Task.Delay(delay, TestContext.Current.CancellationToken);
 #else
             Thread.Sleep(delay);
 #endif
@@ -345,12 +345,12 @@ namespace DataAccessTracing_Tests
             Assert.Equal(0, openCount);
             Assert.Equal(0, closeCount);
 
-            await tracingConnection.OpenAsync();
+            await tracingConnection.OpenAsync(TestContext.Current.CancellationToken);
             Assert.Equal(1, openCount);
             Assert.Equal(0, closeCount);
 
 #if !NET35
-            await Task.Delay(delay);
+            await Task.Delay(delay, TestContext.Current.CancellationToken);
 #else
             Thread.Sleep(delay);
 #endif
