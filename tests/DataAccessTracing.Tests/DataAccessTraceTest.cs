@@ -56,7 +56,9 @@ namespace DataAccessTracing.Tests
                 {
                     var name = row["InvariantName"].ToString()!;
                     var factory = DbProviderFactories.GetFactory(name);
+#pragma warning disable xUnit2032 // Type assertions based on 'assignable from' are confusingly named
                     var tracingFactory = Assert.IsAssignableFrom<TracingProviderFactory>(factory);
+#pragma warning restore xUnit2032 // Type assertions based on 'assignable from' are confusingly named
                     var typeName = row["AssemblyQualifiedName"].ToString()!;
                     Type originalType = Type.GetType(typeName)!;
                     Assert.Equal(originalType, tracingFactory.InnerFactory.GetType());
