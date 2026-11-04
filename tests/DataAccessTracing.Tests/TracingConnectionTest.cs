@@ -5,6 +5,8 @@ using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
 #pragma warning disable CA2007
+#pragma warning disable IDE0017
+#pragma warning disable IDE0130
 
 namespace DataAccessTracing_Tests
 {
@@ -13,8 +15,9 @@ namespace DataAccessTracing_Tests
         const int DelayLowMargin = 10;
         const int DelayHighMargin = 50;
 
+        // for CallerMethod
         private static TracingConnection CreateTracingConnection(DbConnection innerConnection, DataAccessTraceHandler traceHandler, TracingProviderFactory? factory)
-            => new TracingConnection(innerConnection, traceHandler, factory);
+            => new(innerConnection, traceHandler, factory);
 
         [Fact]
         public void Constructor()

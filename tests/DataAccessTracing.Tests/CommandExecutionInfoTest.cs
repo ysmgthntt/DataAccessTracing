@@ -6,7 +6,7 @@ namespace DataAccessTracing.Tests
 {
     public class CommandExecutionInfoTest
     {
-        private static readonly DataAccessTraceHandler _traceHandler = new EmptyTraceHandler();
+        private static readonly DataAccessTraceHandler s_traceHandler = new EmptyTraceHandler();
         private sealed class EmptyTraceHandler : DataAccessTraceHandler { }
 
         [Fact]
@@ -25,7 +25,7 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@C100", Value = "VALUE8", DbType = DbType.Int32 },
                 new TestParameter { ParameterName = "@C10", Value = "VALUE9", DbType = DbType.Int32 },
             ];
-            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "GetParameterExpandedCommandText", _traceHandler, false);
+            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "GetParameterExpandedCommandText", s_traceHandler, false);
             var extendedCommandText = info.GetParameterExpandedCommandText();
             Assert.Equal("SELECT VALUE2, VALUE3, VALUE1, VALUE6, VALUE4, VALUE5, VALUE7, VALUE7, VALUE80, VALUE9, VALUE8", extendedCommandText);
         }
@@ -144,7 +144,7 @@ namespace DataAccessTracing.Tests
         {
             const string sql = "SELECT @P ";
             TestParameterCollection parameters = [new TestParameter { ParameterName = "@P", Value = "value", DbType = dbType }];
-            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "DbTypeTest", _traceHandler, false);
+            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "DbTypeTest", s_traceHandler, false);
             string expected = $"SELECT {(quote ? "'value'" : "value")} ";
             Assert.Equal(expected, info.GetParameterExpandedCommandText());
         }
@@ -158,7 +158,7 @@ namespace DataAccessTracing.Tests
         {
             const string sql = "SELECT @P ";
             TestParameterCollection parameters = [new TestParameter { ParameterName = "@P", Value = "value", Direction = direction }];
-            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "ParameterDirectionTest", _traceHandler, false);
+            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "ParameterDirectionTest", s_traceHandler, false);
             string expected = expand ? "SELECT 'value' " : sql;
             Assert.Equal(expected, info.GetParameterExpandedCommandText());
         }
@@ -170,7 +170,7 @@ namespace DataAccessTracing.Tests
             {
                 const string sql = "SELECT @P ";
                 TestParameterCollection parameters = [new TestParameter { ParameterName = "@P", Value = value, DbType = dbType }];
-                var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "ParameterValueTest", _traceHandler, false);
+                var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, parameters, "ParameterValueTest", s_traceHandler, false);
                 Assert.Equal(expected, info.GetParameterExpandedCommandText());
             }
             Test("SELECT NULL ", null);
@@ -193,7 +193,7 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@Param3", Value = "VALUE3", DbType = DbType.Object, Direction = ParameterDirection.InputOutput },
                 new TestParameter { ParameterName = "@Param4", Value = "VALUE4", DbType = DbType.Boolean, Direction = ParameterDirection.ReturnValue },
             ];
-            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.StoredProcedure, parameters, "GetStoredProcCommandTextTest", _traceHandler, false);
+            var info = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.StoredProcedure, parameters, "GetStoredProcCommandTextTest", s_traceHandler, false);
             var extendedCommandText = info.GetParameterExpandedCommandText();
             var nl = Environment.NewLine;
             Assert.Equal("TestProc"

@@ -4,17 +4,11 @@ using DataAccessTracing.Tests.Mocks;
 
 namespace DataAccessTracing.Tests.Mocks
 {
-    internal class TestTransaction : DbTransaction
+    internal class TestTransaction(TestConnection connection, IsolationLevel isolationLevel) : DbTransaction
     {
-        public TestTransaction(TestConnection connection, IsolationLevel isolationLevel)
-        {
-            DbConnection = connection ?? throw new ArgumentNullException(nameof(connection));
-            IsolationLevel = isolationLevel;
-        }
+        public override IsolationLevel IsolationLevel { get => isolationLevel; }
 
-        public override IsolationLevel IsolationLevel { get; }
-
-        protected override DbConnection? DbConnection { get; }
+        protected override DbConnection? DbConnection { get => connection ?? throw new ArgumentNullException(nameof(connection)); }
 
         private bool _commit;
 
@@ -54,6 +48,7 @@ namespace DataAccessTracing.Tests.Mocks
     }
 }
 #if NETFRAMEWORK
+#pragma warning disable IDE0130
 namespace System.Data.OracleClient
 {
     internal sealed class OracleTransaction(TestConnection connection, IsolationLevel isolationLevel) : TestTransaction(connection, isolationLevel)

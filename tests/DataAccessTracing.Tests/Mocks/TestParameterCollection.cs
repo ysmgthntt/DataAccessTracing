@@ -5,7 +5,7 @@ namespace DataAccessTracing.Tests.Mocks
 {
     internal sealed class TestParameterCollection : DbParameterCollection
     {
-        private readonly List<DbParameter> _parameters = new();
+        private readonly List<DbParameter> _parameters = [];
         IList InnerList => (IList)_parameters;
 
         public override int Count => _parameters.Count;
@@ -14,7 +14,7 @@ namespace DataAccessTracing.Tests.Mocks
 
         public override int Add(object value)
         {
-            if (value is not TestParameter param)
+            if (value is not TestParameter)
                 throw new ArgumentException("value must not be a TestParameter", nameof(value));
 
             //if (Contains(param.ParameterName))

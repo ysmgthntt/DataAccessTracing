@@ -7,7 +7,7 @@ namespace DataAccessTracing.Tests
 {
     public class DataAccessTraceTest
     {
-        private static int PrivateProviderFactoryCreateCount;
+        private static int s_privateProviderFactoryCreateCount;
 
         private sealed class PrivateProviderFactory : DbProviderFactory
         {
@@ -15,7 +15,7 @@ namespace DataAccessTracing.Tests
 
             private PrivateProviderFactory()
             {
-                PrivateProviderFactoryCreateCount++;
+                s_privateProviderFactoryCreateCount++;
             }
         }
 
@@ -37,13 +37,13 @@ namespace DataAccessTracing.Tests
             DbProviderFactories.RegisterFactory("PrivateProviderFactory", typeof(PrivateProviderFactory).AssemblyQualifiedName!);
 #endif
             var before = DbProviderFactories.GetFactoryClasses();
-            Assert.Equal(0, PrivateProviderFactoryCreateCount);
+            Assert.Equal(0, s_privateProviderFactoryCreateCount);
 
             DataAccessTrace.ReplaceDbProviderFactoriesWithTracingProviders();
 #if NET
-            Assert.Equal(1, PrivateProviderFactoryCreateCount);
+            Assert.Equal(1, s_privateProviderFactoryCreateCount);
 #else
-            Assert.Equal(0, PrivateProviderFactoryCreateCount);
+            Assert.Equal(0, s_privateProviderFactoryCreateCount);
 #endif
             Assert.Throws<InvalidOperationException>(() => DataAccessTrace.SetDefaultTraceHandler(new EmptyTraceHandler()));
             Assert.Throws<InvalidOperationException>(() => DataAccessTrace.IsParameterValidationEnabledDefault = true);
@@ -61,7 +61,7 @@ namespace DataAccessTracing.Tests
                     Type originalType = Type.GetType(typeName)!;
                     Assert.Equal(originalType, tracingFactory.InnerFactory.GetType());
                 }
-                Assert.Equal(1, PrivateProviderFactoryCreateCount);
+                Assert.Equal(1, s_privateProviderFactoryCreateCount);
 
 #if NET
                 DbProviderFactories.RegisterFactory($"TestProviderFactory{i}", TestProviderFactory.Instance);
@@ -78,7 +78,7 @@ namespace DataAccessTracing.Tests
 #endif
 
                 DataAccessTrace.ReplaceDbProviderFactoriesWithTracingProviders();
-                Assert.Equal(1, PrivateProviderFactoryCreateCount);
+                Assert.Equal(1, s_privateProviderFactoryCreateCount);
             }
         }
 

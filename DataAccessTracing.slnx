@@ -4,10 +4,14 @@
     <Project Path="sandbox/ConsoleAppNet35/ConsoleAppNet35.csproj" />
     <Project Path="sandbox/ConsoleAppNet48/ConsoleAppNet48.csproj" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/DataAccessTracing/DataAccessTracing.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <File Path="tests/.editorconfig" />
     <Project Path="tests/DataAccessTracing.Tests.Net35/DataAccessTracing.Tests.Net35.csproj" Id="d55ff938-505f-4509-a27d-d172317fdece" />
     <Project Path="tests/DataAccessTracing.Tests/DataAccessTracing.Tests.csproj" Id="37678cbb-d886-4234-bbc2-7348fa1ca91b" />
   </Folder>

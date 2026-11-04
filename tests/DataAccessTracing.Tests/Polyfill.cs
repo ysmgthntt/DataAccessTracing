@@ -1,4 +1,5 @@
 ﻿#if NETFRAMEWORK
+#pragma warning disable IDE0130
 namespace System.Diagnostics.CodeAnalysis
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]

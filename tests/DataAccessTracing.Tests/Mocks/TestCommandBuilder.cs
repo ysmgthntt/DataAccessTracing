@@ -22,6 +22,7 @@ namespace DataAccessTracing.Tests.Mocks
 
         public static void DeriveParameters(TestCommand command)
         {
+            command.ToString();
         }
     }
 }

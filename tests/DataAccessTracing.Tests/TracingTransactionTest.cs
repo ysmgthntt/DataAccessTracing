@@ -4,6 +4,7 @@ using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
 #pragma warning disable CA2007
+#pragma warning disable IDE0130
 
 namespace DataAccessTracing_Tests
 {
