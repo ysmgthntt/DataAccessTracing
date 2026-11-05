@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <Using Remove="System.Net.Http" />
-    <Using Remove="System.Threading.Tasks" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncBridge" Version="0.3.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <!--
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

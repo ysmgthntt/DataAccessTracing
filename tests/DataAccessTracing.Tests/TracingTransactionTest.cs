@@ -30,11 +30,10 @@ namespace DataAccessTracing.Tests
 #endif
 
         [Fact]
-#if !NET35
-        public async Task Commit()
-#else
-        public void Commit()
+#if NET35
+        public void CommitNet35() => Commit().GetAwaiter().GetResult();
 #endif
+        public async Task Commit()
         {
             int delay = 500;
             int beginTransCount = 0, commitCount = 0;
@@ -68,11 +67,7 @@ namespace DataAccessTracing.Tests
             using var trans = tracingConnection.BeginTransaction();
             Assert.Equal(1, beginTransCount);
             Assert.Equal(0, commitCount);
-#if !NET35
             await Task.Delay(delay, TestContext.Current.CancellationToken);
-#else
-            Thread.Sleep(delay);
-#endif
             trans.Commit();
             Assert.Equal(1, beginTransCount);
             Assert.Equal(1, commitCount);
@@ -124,11 +119,10 @@ namespace DataAccessTracing.Tests
 #endif
 
         [Fact]
-#if !NET35
-        public async Task Rollback()
-#else
-        public void Rollback()
+#if NET35
+        public void RollbackNet35() => Rollback().GetAwaiter().GetResult();
 #endif
+        public async Task Rollback()
         {
             int delay = 700;
             int beginTransCount = 0, rollbackCount = 0;
@@ -162,11 +156,7 @@ namespace DataAccessTracing.Tests
             using var trans = tracingConnection.BeginTransaction();
             Assert.Equal(1, beginTransCount);
             Assert.Equal(0, rollbackCount);
-#if !NET35
             await Task.Delay(delay, TestContext.Current.CancellationToken);
-#else
-            Thread.Sleep(delay);
-#endif
             trans.Rollback();
             Assert.Equal(1, beginTransCount);
             Assert.Equal(1, rollbackCount);

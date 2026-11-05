@@ -45,11 +45,10 @@ namespace DataAccessTracing.Tests
         }
 
         [Fact]
-#if !NET35
-        public async Task OpenClose()
-#else
-        public void OpenClose()
+#if NET35
+        public void OpenCloseNet35() => OpenClose().GetAwaiter().GetResult();
 #endif
+        public async Task OpenClose()
         {
             int delay = 1000;
             int openCount = 0, closeCount = 0;
@@ -90,11 +89,7 @@ namespace DataAccessTracing.Tests
                 Assert.Equal(i + 1, openCount);
                 Assert.Equal(i, closeCount);
 
-#if !NET35
                 await Task.Delay(delay, TestContext.Current.CancellationToken);
-#else
-                Thread.Sleep(delay);
-#endif
 
                 tracingConnection.Close();
                 Assert.Equal(i + 1, openCount);
@@ -157,7 +152,7 @@ namespace DataAccessTracing.Tests
             }
         }
 #else
-        public void OpenCloseAsync(){}
+        public void OpenCloseAsync() { }
 #endif
 
         [Fact]
@@ -259,11 +254,10 @@ namespace DataAccessTracing.Tests
         }
 
         [Fact]
-#if !NET35
-        public async Task DisposeTest()
-#else
-        public void DisposeTest()
+#if NET35
+        public void DisposeTestNet35() => DisposeTest().GetAwaiter().GetResult();
 #endif
+        public async Task DisposeTest()
         {
             int delay = 1000;
             int openCount = 0, closeCount = 0;
@@ -298,11 +292,7 @@ namespace DataAccessTracing.Tests
             Assert.Equal(1, openCount);
             Assert.Equal(0, closeCount);
 
-#if !NET35
             await Task.Delay(delay, TestContext.Current.CancellationToken);
-#else
-            Thread.Sleep(delay);
-#endif
 
             Assert.False(innerConnection.IsDisposed);
             tracingConnection.Dispose();
@@ -348,11 +338,7 @@ namespace DataAccessTracing.Tests
             Assert.Equal(1, openCount);
             Assert.Equal(0, closeCount);
 
-#if !NET35
             await Task.Delay(delay, TestContext.Current.CancellationToken);
-#else
-            Thread.Sleep(delay);
-#endif
 
             Assert.False(innerConnection.IsDisposed);
             await tracingConnection.DisposeAsync();

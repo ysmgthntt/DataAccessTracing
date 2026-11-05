@@ -23,5 +23,18 @@ namespace DataAccessTracing.Tests
             }
         }
     }
+    internal static class TaskExtensions
+    {
+        extension(Task)
+        {
+            public static Task Delay(int dueTime, CancellationToken cancellationToken) => TaskEx.Delay(dueTime, cancellationToken);
+        }
+    }
+    internal sealed class TestContext
+    {
+        public static TestContext Current = new();
+
+        public CancellationToken CancellationToken => CancellationToken.None;
+    }
 }
 #endif
