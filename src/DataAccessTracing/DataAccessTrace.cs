@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.ObjectModel;
+using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Reflection;
@@ -121,6 +122,17 @@ namespace DataAccessTracing
             }
         }
 
+        private static bool _excludePrefixesChanged;
+        public static IEnumerable<string>? StackTraceExcludedNamespacePrefixes
+        {
+            get;
+            set
+            {
+                field = value;
+                _excludePrefixesChanged = true;
+            }
+        } = new List<string>() { "System.", "Microsoft." }.AsReadOnly();
+
         internal static MethodBase? GetCallerMethod(int startFrameCount)
         {
             var thisAssembly = typeof(DataAccessTrace).Assembly;
@@ -136,12 +148,24 @@ namespace DataAccessTracing
                 //if (method.IsDefined(typeof(CompilerGeneratedAttribute), false) || declaringType.IsDefined(typeof(CompilerGeneratedAttribute), false))
                 //    continue;
                 var typeName = declaringType.FullName;
-                if (typeName is not null &&
-                    !typeName.Contains('<') &&
-                    !typeName.StartsWith("System.", StringComparison.Ordinal) &&
-                    !typeName.StartsWith("Microsoft.", StringComparison.Ordinal))
+                if (typeName is null || typeName.Contains('<'))
+                    continue;
+                if (!_excludePrefixesChanged)
                 {
-                    return method;
+                    if (!typeName.StartsWith("System.", StringComparison.Ordinal) &&
+                        !typeName.StartsWith("Microsoft.", StringComparison.Ordinal))
+                    {
+                        return method;
+                    }
+                }
+                else if (StackTraceExcludedNamespacePrefixes is not null)
+                {
+                    foreach (var excludePrefix in StackTraceExcludedNamespacePrefixes)
+                    {
+                        if (typeName.StartsWith(excludePrefix, StringComparison.Ordinal))
+                            break;
+                        return method;
+                    }
                 }
             }
             return null;
