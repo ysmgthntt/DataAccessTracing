@@ -48,7 +48,7 @@ namespace DataAccessTracing.Diagnostics
             ConnectionInfo = connectionInfo;
             TransactionInfo = transactionInfo;
             ExecutionMethodName = executionMethodName;
-            CallerMethod = DataAccessTrace.GetCallerMethod(5);
+            CallerMethod = DataAccessTrace.GetCallerMethod(4);
 
             CommandText = commandText;
             CommandType = commandType;

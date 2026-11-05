@@ -19,12 +19,15 @@
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestCommandBuilder.cs" Link="Mocks\TestCommandBuilder.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestConnection.cs" Link="Mocks\TestConnection.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestDataAdapter.cs" Link="Mocks\TestDataAdapter.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\Mocks\TestDataReader.cs" Link="Mocks\TestDataReader.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestParameter.cs" Link="Mocks\TestParameter.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestParameterCollection.cs" Link="Mocks\TestParameterCollection.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestProviderFactory.cs" Link="Mocks\TestProviderFactory.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestTraceHandler.cs" Link="Mocks\TestTraceHandler.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestTransaction.cs" Link="Mocks\TestTransaction.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Polyfill.cs" Link="Polyfill.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\TestHelper.cs" Link="TestHelper.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\TracingCommandTest.cs" Link="TracingCommandTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingConnectionTest.cs" Link="TracingConnectionTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingProviderFactoryTest.cs" Link="TracingProviderFactoryTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingTransactionTest.cs" Link="TracingTransactionTest.cs" />
@@ -54,6 +57,10 @@
     <None Update="App.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Mocks\" />
   </ItemGroup>
 
 </Project>

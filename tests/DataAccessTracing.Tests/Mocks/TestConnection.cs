@@ -61,6 +61,43 @@ namespace DataAccessTracing.Tests.Mocks
 
         protected override DbCommand CreateDbCommand() => new TestCommand() { Connection = this };
 
+        //
+
+        protected override DbProviderFactory? DbProviderFactory => TestProviderFactory.Instance;
+
+        //
+
+#if !NET35
+        public override async Task OpenAsync(CancellationToken cancellationToken)
+        {
+            await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+            await Task.Delay(10, cancellationToken).ConfigureAwait(false);
+        }
+
+#if NET
+        protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken)
+        {
+            var trans = await base.BeginDbTransactionAsync(isolationLevel, cancellationToken).ConfigureAwait(false);
+            await Task.Delay(10, cancellationToken).ConfigureAwait(false);
+            return trans;
+        }
+
+        public override async Task CloseAsync()
+        {
+            await base.CloseAsync().ConfigureAwait(false);
+            await Task.Delay(10).ConfigureAwait(false);
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            await base.DisposeAsync().ConfigureAwait(false);
+            await Task.Delay(10).ConfigureAwait(false);
+        }
+#endif
+#endif
+
+        //
+
         public bool IsDisposed { get; private set; }
 
         protected override void Dispose(bool disposing)

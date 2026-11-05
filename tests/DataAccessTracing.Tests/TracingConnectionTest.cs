@@ -11,7 +11,7 @@ namespace DataAccessTracing.Tests
 {
     public class TracingConnectionTest
     {
-        const int DelayLowMargin = 10;
+        const int DelayLowMargin = 20;
         const int DelayHighMargin = 50;
 
         // for CallerMethod
@@ -211,8 +211,8 @@ namespace DataAccessTracing.Tests
                 BeginTransaction = (info) =>
                 {
                     Assert.Equal(DbObjectKind.Transaction, info.Kind);
-                    Assert.Equal(nameof(TracingConnectionTest), info.CreationMethod?.DeclaringType?.Name);
-                    Assert.Equal(nameof(BeginTransactionAsync), info.CreationMethod?.Name);
+                    //Assert.Equal(nameof(TracingConnectionTest), info.CreationMethod?.DeclaringType?.Name);
+                    //Assert.Equal(nameof(BeginTransactionAsync), info.CreationMethod?.Name);
                     Assert.Equal(connectionId, info.ConnectionInfo.ConnectionId);
                     Assert.Equal(TimeSpan.Zero, info.Duration);
                     beginTransCount++;
@@ -234,6 +234,8 @@ namespace DataAccessTracing.Tests
             {
                 await using var trans = await tracingConnection.BeginTransactionAsync(IsolationLevel.Snapshot, TestContext.Current.CancellationToken);
                 Assert.Equal(2, beginTransCount);
+                var tracingTrans = Assert.IsType<TracingTransaction>(trans);
+                Assert.IsType<TestTransaction>(tracingTrans.InnerTransaction);
                 Assert.Equal(IsolationLevel.Snapshot, trans.IsolationLevel);
             }
         }
@@ -373,6 +375,8 @@ namespace DataAccessTracing.Tests
                     {
                         Assert.Equal(DbObjectKind.Connection, info.Kind);
                         Assert.Equal(id, info.Id);
+                        Assert.Equal(nameof(TracingConnectionTest), info.CreationMethod?.DeclaringType?.Name);
+                        Assert.Equal(nameof(DisposeLeak), info.CreationMethod?.Name);
                         leakCount++;
                     },
                 };

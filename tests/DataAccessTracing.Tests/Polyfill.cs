@@ -21,6 +21,8 @@ namespace DataAccessTracing.Tests
                 Assert.Equal(paramName, ex.ParamName);
                 return ex;
             }
+
+            public static void Fail() => throw new Xunit.Sdk.AssertException("Assert.Fail() Failure");
         }
     }
     internal static class TaskExtensions

@@ -26,7 +26,7 @@ namespace DataAccessTracing.Tests.Mocks
             _rollback = true;
         }
 
-        private void CheckAvailable()
+        public void CheckAvailable()
         {
             if (_commit)
                 throw new InvalidOperationException();

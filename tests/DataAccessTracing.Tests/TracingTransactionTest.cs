@@ -277,6 +277,8 @@ namespace DataAccessTracing.Tests
                         Assert.Equal(DbObjectKind.Transaction, info.Kind);
                         Assert.Equal(id, info.Id);
                         Assert.Equal(connectionId, ((TransactionInfo)info).ConnectionInfo.Id);
+                        Assert.Equal(nameof(TracingTransactionTest), info.CreationMethod?.DeclaringType?.Name);
+                        Assert.Equal(nameof(DisposeLeak), info.CreationMethod?.Name);
                         leakCount++;
                     },
                 };
