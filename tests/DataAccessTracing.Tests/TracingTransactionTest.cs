@@ -54,6 +54,8 @@ namespace DataAccessTracing.Tests
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionInfo.ConnectionId);
                     Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
+                    Thread.Sleep(DelayLowMargin + DelayHighMargin);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     commitCount++;
                 },
             };
@@ -95,6 +97,8 @@ namespace DataAccessTracing.Tests
                 {
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionInfo.ConnectionId);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
+                    Thread.Sleep(DelayLowMargin + DelayHighMargin);
                     Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     commitCount++;
                 },
@@ -143,6 +147,8 @@ namespace DataAccessTracing.Tests
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionInfo.ConnectionId);
                     Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
+                    Thread.Sleep(DelayLowMargin + DelayHighMargin);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     rollbackCount++;
                 },
             };
@@ -184,6 +190,8 @@ namespace DataAccessTracing.Tests
                 {
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionInfo.ConnectionId);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
+                    Thread.Sleep(DelayLowMargin + DelayHighMargin);
                     Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     rollbackCount++;
                 },

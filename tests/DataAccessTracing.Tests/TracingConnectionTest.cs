@@ -26,10 +26,10 @@ namespace DataAccessTracing.Tests
             {
                 ConnectionOpened = (info) =>
                 {
-                    openCount++;
                     Assert.Equal(DbObjectKind.Connection, info.Kind);
                     Assert.Equal(nameof(TracingConnectionTest), info.CreationMethod?.DeclaringType?.Name);
                     Assert.Equal(nameof(Constructor), info.CreationMethod?.Name);
+                    openCount++;
                 },
                 ConnectionClosed = (_) => { },
             };
@@ -71,6 +71,8 @@ namespace DataAccessTracing.Tests
                 {
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionId);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
+                    Thread.Sleep(DelayLowMargin + DelayHighMargin);
                     Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     closeCount++;
                 },
@@ -122,6 +124,8 @@ namespace DataAccessTracing.Tests
                 {
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionId);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
+                    Thread.Sleep(DelayLowMargin + DelayHighMargin);
                     Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     closeCount++;
                 },
@@ -276,6 +280,8 @@ namespace DataAccessTracing.Tests
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionId);
                     Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
+                    Thread.Sleep(DelayLowMargin + DelayHighMargin);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     closeCount++;
                 },
             };
@@ -321,6 +327,8 @@ namespace DataAccessTracing.Tests
                 {
                     Assert.Equal(id, info.Id);
                     Assert.Equal(connectionId, info.ConnectionId);
+                    Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
+                    Thread.Sleep(DelayLowMargin + DelayHighMargin);
                     Assert.InRange(info.Duration.TotalMilliseconds, delay - DelayLowMargin, delay + DelayHighMargin);
                     closeCount++;
                 },
