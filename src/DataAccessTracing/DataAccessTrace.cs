@@ -158,14 +158,22 @@ namespace DataAccessTracing
                         return method;
                     }
                 }
-                else if (StackTraceExcludedNamespacePrefixes is not null)
+                else
                 {
-                    foreach (var excludePrefix in StackTraceExcludedNamespacePrefixes)
+                    bool exclude = false;
+                    if (StackTraceExcludedNamespacePrefixes is not null and var prefixes)
                     {
-                        if (typeName.StartsWith(excludePrefix, StringComparison.Ordinal))
-                            break;
-                        return method;
+                        foreach (var excludePrefix in prefixes)
+                        {
+                            if (typeName.StartsWith(excludePrefix, StringComparison.Ordinal))
+                            {
+                                exclude = true;
+                                break;
+                            }
+                        }
                     }
+                    if (!exclude)
+                        return method;
                 }
             }
             return null;

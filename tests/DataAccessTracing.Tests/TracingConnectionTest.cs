@@ -10,6 +10,9 @@ using DataAccessTracing.Tests.Mocks;
 namespace DataAccessTracing.Tests
 {
     public class TracingConnectionTest
+#if !NET35
+        : IClassFixture<CallerMethodFixture>
+#endif
     {
         const int DelayLowMargin = 20;
         const int DelayHighMargin = 50;

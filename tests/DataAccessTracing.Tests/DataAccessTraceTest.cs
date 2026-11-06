@@ -1,5 +1,7 @@
 ﻿using System.Data;
 using System.Data.Common;
+using System.Reflection;
+using DataAccessTracing;
 using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
@@ -89,5 +91,67 @@ namespace DataAccessTracing.Tests
         {
             Assert.Throws<ArgumentNullException>("traceHandler", () => DataAccessTrace.SetDefaultTraceHandler(null!));
         }
+
+        [Fact]
+        public void StackTraceExcludedNamespacePrefixes()
+        {
+            MethodBase? callerMethod;
+            callerMethod = System.Tests.DataAccessTraceTestInSystemNamespace.GetCallerMethod();
+            Assert.Equal(nameof(DataAccessTraceTest), callerMethod?.DeclaringType?.Name);
+            Assert.Equal(nameof(StackTraceExcludedNamespacePrefixes), callerMethod?.Name);
+            callerMethod = Microsoft.Tests.DataAccessTraceTestInMicrosoftNamespace.GetCallerMethod();
+            Assert.Equal(nameof(DataAccessTraceTest), callerMethod?.DeclaringType?.Name);
+            Assert.Equal(nameof(StackTraceExcludedNamespacePrefixes), callerMethod?.Name);
+
+            Thread.Sleep(1000);
+            if (!CallerMethodFixture.Finished.WaitOne(5000))
+                Assert.Fail();
+
+            DataAccessTrace.StackTraceExcludedNamespacePrefixes = [nameof(DataAccessTracing), "Tests"];
+            callerMethod = System.Tests.DataAccessTraceTestInSystemNamespace.GetCallerMethod();
+            Assert.Equal("DataAccessTraceTestInSystemNamespace", callerMethod?.DeclaringType?.Name);
+            Assert.Equal("GetCallerMethodInSystem", callerMethod?.Name);
+            callerMethod = Microsoft.Tests.DataAccessTraceTestInMicrosoftNamespace.GetCallerMethod();
+            Assert.Equal("DataAccessTraceTestInMicrosoftNamespace", callerMethod?.DeclaringType?.Name);
+            Assert.Equal("GetCallerMethodInMicrosoft", callerMethod?.Name);
+
+            DataAccessTrace.StackTraceExcludedNamespacePrefixes = null;
+            callerMethod = System.Tests.DataAccessTraceTestInSystemNamespace.GetCallerMethod();
+            Assert.Equal("DataAccessTraceTestInSystemNamespace", callerMethod?.DeclaringType?.Name);
+            Assert.Equal("GetCallerMethodInSystem", callerMethod?.Name);
+            callerMethod = Microsoft.Tests.DataAccessTraceTestInMicrosoftNamespace.GetCallerMethod();
+            Assert.Equal("DataAccessTraceTestInMicrosoftNamespace", callerMethod?.DeclaringType?.Name);
+            Assert.Equal("GetCallerMethodInMicrosoft", callerMethod?.Name);
+
+            DataAccessTrace.StackTraceExcludedNamespacePrefixes = ["Tests", "System."];
+            callerMethod = System.Tests.DataAccessTraceTestInSystemNamespace.GetCallerMethod();
+            Assert.Equal(nameof(DataAccessTraceTest), callerMethod?.DeclaringType?.Name);
+            Assert.Equal(nameof(StackTraceExcludedNamespacePrefixes), callerMethod?.Name);
+            callerMethod = Microsoft.Tests.DataAccessTraceTestInMicrosoftNamespace.GetCallerMethod();
+            Assert.Equal("DataAccessTraceTestInMicrosoftNamespace", callerMethod?.DeclaringType?.Name);
+            Assert.Equal("GetCallerMethodInMicrosoft", callerMethod?.Name);
+        }
+    }
+}
+namespace System.Tests
+{
+    internal static class DataAccessTraceTestInSystemNamespace
+    {
+        private static MethodBase? GetCallerMethodInSystem()
+            => DataAccessTrace.GetCallerMethod(0);
+
+        public static MethodBase? GetCallerMethod()
+            => GetCallerMethodInSystem();
+    }
+}
+namespace Microsoft.Tests
+{
+    internal static class DataAccessTraceTestInMicrosoftNamespace
+    {
+        private static MethodBase? GetCallerMethodInMicrosoft()
+            => DataAccessTrace.GetCallerMethod(0);
+
+        public static MethodBase? GetCallerMethod()
+            => GetCallerMethodInMicrosoft();
     }
 }

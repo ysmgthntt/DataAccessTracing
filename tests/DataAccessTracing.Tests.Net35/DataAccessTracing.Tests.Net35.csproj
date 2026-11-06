@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\DataAccessTracing.Tests\CallerMethodFixture.cs" Link="CallerMethodFixture.cs" />
     <Compile Include="..\DataAccessTracing.Tests\CommandExecutionInfoTest.cs" Link="CommandExecutionInfoTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\DataAccessTraceTest.cs" Link="DataAccessTraceTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestCommand.cs" Link="Mocks\TestCommand.cs" />
