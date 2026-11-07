@@ -297,9 +297,18 @@ namespace DataAccessTracing
             Used();
             info = new CommandExecutionInfo(_info, _connection?.Info, _transaction?.Info, _innerCommand.CommandText, _innerCommand.CommandType, _innerCommand.Parameters, methodName,
                 _traceHandler, _isParameterValidationEnabled);
-            _traceHandler.OnCommandExecuting(info);
-            info.Begin();
-            return info.GetDisposer();
+            var disposer = info.GetDisposer();
+            try
+            {
+                _traceHandler.OnCommandExecuting(info);
+                info.Begin();
+            }
+            catch
+            {
+                disposer.Dispose();
+                throw;
+            }
+            return disposer;
         }
 
         // dispose check

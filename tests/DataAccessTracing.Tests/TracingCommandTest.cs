@@ -362,6 +362,7 @@ namespace DataAccessTracing.Tests
                     CheckExecutedInfo(info, id, executionId, connectionId, delay, 0);
                     executedCount++;
                 },
+                DataReaderClosed = (_) => { },
             };
             using var cnn = new TestConnection();
             using var tracingConnection = new TracingConnection(cnn, traceHandler, null);
@@ -376,7 +377,7 @@ namespace DataAccessTracing.Tests
             Assert.Equal(0, executedCount);
             for (int i = 1; i <= 3; i++)
             {
-                var result = tracingCommand.ExecuteReader();
+                using var result = tracingCommand.ExecuteReader();
                 Assert.Equal(i, executingCount);
                 Assert.Equal(i, executedCount);
                 var tracingDataReader = Assert.IsType<TracingDataReader>(result);
@@ -413,6 +414,7 @@ namespace DataAccessTracing.Tests
                     CheckExecutedInfo(info, id, executionId, connectionId, delay, 0);
                     executedCount++;
                 },
+                DataReaderClosed = (_) => { },
             };
             using var cnn = new TestConnection();
             using var tracingConnection = new TracingConnection(cnn, traceHandler, null);
@@ -427,7 +429,7 @@ namespace DataAccessTracing.Tests
             Assert.Equal(0, executedCount);
             for (int i = 1; i <= 3; i++)
             {
-                var result = await tracingCommand.ExecuteReaderAsync(TestContext.Current.CancellationToken);
+                using var result = await tracingCommand.ExecuteReaderAsync(TestContext.Current.CancellationToken);
                 Assert.Equal(i, executingCount);
                 Assert.Equal(i, executedCount);
                 var tracingDataReader = Assert.IsType<TracingDataReader>(result);
@@ -454,6 +456,13 @@ namespace DataAccessTracing.Tests
             Guid id = default, executionId = default, connectionId = default;
             Exception? exception = null;
             string? executionMethodName = null;
+            CommandExecutionInfo? executionInfo = null;
+            void CheckCommandExecutionInfoIsDisposed()
+            {
+                Assert.Null(executionInfo!.Exception);
+                var parameterCollection = executionInfo.GetPrivateFieldValue<object>("_parameterCollection");
+                Assert.Null(parameterCollection);
+            }
             var traceHandler = new TestTraceHandler
             {
                 ConnectionOpened = (info) =>
@@ -487,6 +496,7 @@ namespace DataAccessTracing.Tests
                     Assert.Equal(0, info.RecordsAffected);
 
                     Assert.Equal(exception, info.Exception);
+                    executionInfo = info;
 
                     exceptionCount++;
                 },
@@ -502,21 +512,27 @@ namespace DataAccessTracing.Tests
 
             Assert.Equal(0, executingCount);
             Assert.Equal(0, exceptionCount);
+
             executionMethodName = "ExecuteNonQuery";
             cmd.ThrowException = exception = new Exception(executionMethodName);
             Assert.Throws<Exception>(() => ExecuteForExceptionTest(tracingCommand.ExecuteNonQuery));
             Assert.Equal(1, executingCount);
             Assert.Equal(1, exceptionCount);
+            CheckCommandExecutionInfoIsDisposed();
+
             executionMethodName = "ExecuteScalar";
             cmd.ThrowException = exception = new Exception(executionMethodName);
             Assert.Throws<Exception>(() => ExecuteForExceptionTest(tracingCommand.ExecuteScalar));
             Assert.Equal(2, executingCount);
             Assert.Equal(2, exceptionCount);
+            CheckCommandExecutionInfoIsDisposed();
+
             executionMethodName = "ExecuteDbDataReader";
             cmd.ThrowException = exception = new Exception(executionMethodName);
             Assert.Throws<Exception>(() => ExecuteForExceptionTest(tracingCommand.ExecuteReader));
             Assert.Equal(3, executingCount);
             Assert.Equal(3, exceptionCount);
+            CheckCommandExecutionInfoIsDisposed();
 
 #if !NET35
             executionMethodName = "ExecuteNonQueryAsync";
@@ -524,16 +540,21 @@ namespace DataAccessTracing.Tests
             await Assert.ThrowsAsync<Exception>(async () => await ExecuteForExceptionTest(tracingCommand.ExecuteNonQueryAsync));
             Assert.Equal(4, executingCount);
             Assert.Equal(4, exceptionCount);
+            CheckCommandExecutionInfoIsDisposed();
+
             executionMethodName = "ExecuteScalarAsync";
             cmd.ThrowException = exception = new Exception(executionMethodName);
             await Assert.ThrowsAsync<Exception>(async () => await ExecuteForExceptionTest(tracingCommand.ExecuteScalarAsync));
             Assert.Equal(5, executingCount);
             Assert.Equal(5, exceptionCount);
+            CheckCommandExecutionInfoIsDisposed();
+
             executionMethodName = "ExecuteDbDataReaderAsync";
             cmd.ThrowException = exception = new Exception(executionMethodName);
             await Assert.ThrowsAsync<Exception>(async () => await ExecuteForExceptionTest(tracingCommand.ExecuteReaderAsync));
             Assert.Equal(6, executingCount);
             Assert.Equal(6, exceptionCount);
+            CheckCommandExecutionInfoIsDisposed();
 #endif
         }
 
@@ -679,6 +700,76 @@ namespace DataAccessTracing.Tests
         }
 
         [Fact]
+#if NET
+        public async Task UnusedAsync()
+        {
+            static async Task<TracingConnection> CreateOpenConnection(DataAccessTraceHandler traceHandler)
+            {
+#pragma warning disable CA2000
+                var innerConnection = new TestConnection();
+#pragma warning restore CA2000
+                var tracingConnection = new TracingConnection(innerConnection, traceHandler, null);
+                tracingConnection.ConnectionString = "test";
+                await tracingConnection.OpenAsync(TestContext.Current.CancellationToken);
+                return tracingConnection;
+            }
+
+            DbObjectKind kind = DbObjectKind.CommandBuilder;
+            int unusedCount = 0;
+            var traceHandler = new TestTraceHandler
+            {
+                ConnectionOpened = (_) => { },
+                ConnectionClosed = (_) => { },
+                BeginTransaction = (_) => { },
+                CommandExecuting = (_) => { },
+                CommandExecuted = (_) => { },
+                UnusedObjectDetected = (info) =>
+                {
+                    Assert.Equal(kind, info.Kind);
+                    //Assert.Equal(nameof(TracingCommandTest), info.CreationMethod?.DeclaringType?.Name);
+                    //Assert.Equal(nameof(Unused), info.CreationMethod?.Name);
+                    unusedCount++;
+                },
+            };
+            {
+                var tracingConnection = await CreateOpenConnection(traceHandler);
+                var trans = await tracingConnection.BeginTransactionAsync(TestContext.Current.CancellationToken);
+                var tracingCommand = tracingConnection.CreateCommand();
+                tracingCommand.Transaction = trans;
+
+                await tracingCommand.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+
+                Assert.Equal(0, unusedCount);
+                await tracingCommand.DisposeAsync();
+                Assert.Equal(0, unusedCount);
+                await trans.DisposeAsync();
+                Assert.Equal(0, unusedCount);
+                await tracingConnection.DisposeAsync();
+                Assert.Equal(0, unusedCount);
+            }
+            {
+                var tracingConnection = await CreateOpenConnection(traceHandler);
+                var trans = await tracingConnection.BeginTransactionAsync(TestContext.Current.CancellationToken);
+                var tracingCommand = tracingConnection.CreateCommand();
+                tracingCommand.Transaction = trans;
+
+                Assert.Equal(0, unusedCount);
+                kind = DbObjectKind.Command;
+                await tracingCommand.DisposeAsync();
+                Assert.Equal(1, unusedCount);
+                kind = DbObjectKind.Transaction;
+                await trans.DisposeAsync();
+                Assert.Equal(2, unusedCount);
+                kind = DbObjectKind.Connection;
+                await tracingConnection.DisposeAsync();
+                Assert.Equal(3, unusedCount);
+            }
+        }
+#else
+        public void UnusedAsync() { }
+#endif
+
+        [Fact]
         public void UnusedWithLoop()
         {
             static TracingConnection CreateOpenConnection(DataAccessTraceHandler traceHandler)
@@ -739,6 +830,165 @@ namespace DataAccessTracing.Tests
             deleteCommand.Dispose();
             trans.Dispose();
             tracingConnection.Dispose();
+        }
+
+        [Fact]
+#if NET
+        public async Task UnusedWithLoopAsync()
+        {
+            static async Task<TracingConnection> CreateOpenConnection(DataAccessTraceHandler traceHandler)
+            {
+#pragma warning disable CA2000
+                var innerConnection = new TestConnection();
+#pragma warning restore CA2000
+                var tracingConnection = new TracingConnection(innerConnection, traceHandler, null);
+                tracingConnection.ConnectionString = "test";
+                await tracingConnection.OpenAsync(TestContext.Current.CancellationToken);
+                return tracingConnection;
+            }
+
+            var traceHandler = new TestTraceHandler
+            {
+                ConnectionOpened = (_) => { },
+                ConnectionClosed = (_) => { },
+                BeginTransaction = (_) => { },
+                CommandExecuting = (_) => { },
+                CommandExecuted = (_) => { },
+                UnusedObjectDetected = (info) =>
+                {
+                    Assert.Fail();
+                },
+            };
+
+            var tracingConnection = await CreateOpenConnection(traceHandler);
+            var trans = await tracingConnection.BeginTransactionAsync(TestContext.Current.CancellationToken);
+
+            var insertCommand = CreateCommandForTest(tracingConnection);
+            var updateCommand = CreateCommandForTest(tracingConnection);
+            var deleteCommand = CreateCommandForTest(tracingConnection);
+            insertCommand.Transaction = trans;
+            updateCommand.Transaction = trans;
+            deleteCommand.Transaction = trans;
+
+            List<int> updateTargetList = [1];
+            foreach (var data in updateTargetList)
+            {
+                switch (data)
+                {
+                    case 0:
+                        await insertCommand.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+                        Assert.Fail();
+                        break;
+                    case 1:
+                        await updateCommand.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+                        break;
+                    case 2:
+                        await deleteCommand.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
+                        Assert.Fail();
+                        break;
+                }
+            }
+
+            await insertCommand.DisposeAsync();
+            await updateCommand.DisposeAsync();
+            await deleteCommand.DisposeAsync();
+            await trans.DisposeAsync();
+            await tracingConnection.DisposeAsync();
+        }
+#else
+        public void UnusedWithLoopAsync() { }
+#endif
+
+        [Fact]
+#if !NET35
+        public async Task InvalidParameter()
+#else
+        public void InvalidParameter()
+#endif
+        {
+            var traceHandler = new DefaultDataAccessTraceHandler();
+            using var innerConnection = new TestConnection();
+            using var tracingConnection = new TracingConnection(innerConnection, traceHandler, null);
+            using var cmd = new TestCommand();
+            using var tracingCommand = new TracingCommand(cmd, traceHandler, tracingConnection, true);
+            tracingCommand.CommandText = TestCommandText;
+            tracingCommand.CommandType = CommandType.Text;
+            tracingCommand.Parameters.Add(new TestParameter { ParameterName = "@P1", Value = "value1" });
+            tracingCommand.Parameters.Add(new TestParameter { ParameterName = "@P2", Value = "value2" });
+            tracingCommand.Parameters.Add(new TestParameter { ParameterName = "@P3", Value = "value3" });
+
+            void CheckCommandExecutionInfo(CommandExecutionInfo info)
+            {
+                Assert.Equal(CommandType.Text, info.CommandType);
+                Assert.Equal(TestCommandText, info.CommandText);
+
+                Assert.Equal("SELECT 'value1', 'value2' ", info.GetParameterExpandedCommandText());
+                var parameters = info.GetParameters().ToList();
+                Assert.Equal(3, parameters.Count);
+                Assert.Equal("@P1", parameters[0].ParameterName);
+                Assert.Equal("value1", parameters[0].Value);
+                Assert.Equal("@P2", parameters[1].ParameterName);
+                Assert.Equal("value2", parameters[1].Value);
+                Assert.Equal("@P3", parameters[2].ParameterName);
+                Assert.Equal("value3", parameters[2].Value);
+
+                Assert.Equal(TimeSpan.Zero, info.Duration);
+                Assert.Equal(0, info.RecordsAffected);
+                Assert.Null(info.Exception);
+
+                var parameterCollection = info.GetPrivateFieldValue<object>("_parameterCollection");
+                Assert.Null(parameterCollection);
+            }
+
+            tracingConnection.ConnectionString = "test";
+            tracingConnection.Open();
+            tracingCommand.Connection = tracingConnection;
+            cmd.ExecuteReaderDataTable = new DataTable();
+
+            var ex = Assert.Throws<InvalidParameterException>(tracingCommand.ExecuteReader);
+            var info = ex.ExecutionInfo;
+            CheckCommandExecutionInfo(info);
+
+#if !NET35
+            ex = await Assert.ThrowsAsync<InvalidParameterException>(async () => await tracingCommand.ExecuteNonQueryAsync(TestContext.Current.CancellationToken));
+            info = ex.ExecutionInfo;
+            CheckCommandExecutionInfo(info);
+#endif
+        }
+
+        [Fact]
+        public void ThrowOnCommandExecuting()
+        {
+            CommandExecutionInfo? executionInfo = null;
+            var exception = new Exception("test");
+            var traceHandler = new TestTraceHandler
+            {
+                ConnectionOpened = (_) => { },
+                ConnectionClosed = (_) => { },
+                CommandExecuting = (info) =>
+                {
+                    var parameterCollection = info.GetPrivateFieldValue<object>("_parameterCollection");
+                    Assert.NotNull(parameterCollection);
+                    executionInfo = info;
+                    throw exception;
+                },
+                CommandExecuted = (info) =>
+                {
+                    Assert.Fail();
+                },
+            };
+            using var cnn = new TestConnection();
+            using var tracingConnection = new TracingConnection(cnn, traceHandler, null);
+            using var tracingCommand = CreateCommandForTest(tracingConnection);
+            var cmd = (TestCommand)tracingCommand.GetInnerCommand();
+            tracingConnection.ConnectionString = "test";
+            tracingConnection.Open();
+
+            var ex = Assert.Throws<Exception>(() => tracingCommand.ExecuteNonQuery());
+            Assert.Equal(exception, ex);
+            Assert.NotNull(executionInfo);
+            var parameterCollection = executionInfo!.GetPrivateFieldValue<object>("_parameterCollection");
+            Assert.Null(parameterCollection);
         }
     }
 }
