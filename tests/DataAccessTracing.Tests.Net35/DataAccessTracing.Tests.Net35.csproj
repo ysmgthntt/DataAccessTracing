@@ -30,6 +30,7 @@
     <Compile Include="..\DataAccessTracing.Tests\TestHelper.cs" Link="TestHelper.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingCommandTest.cs" Link="TracingCommandTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingConnectionTest.cs" Link="TracingConnectionTest.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\TracingDataAdapterTest.cs" Link="TracingDataAdapterTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingDataReaderTest.cs" Link="TracingDataReaderTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingProviderFactoryTest.cs" Link="TracingProviderFactoryTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingTransactionTest.cs" Link="TracingTransactionTest.cs" />

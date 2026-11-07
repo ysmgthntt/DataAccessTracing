@@ -16,6 +16,10 @@ namespace DataAccessTracing
             _innerAdapter = innerAdapter;
             _traceHandler = traceHandler;
             _info = new();
+
+            // ????
+            // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Data.Common/src/System/Data/Common/DataAdapter.cs#L43
+            GC.ReRegisterForFinalize(this);
         }
 
         public override bool ReturnProviderSpecificTypes

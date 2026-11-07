@@ -87,7 +87,12 @@ namespace DataAccessTracing
 
         public override int GetOrdinal(string name) => _innerReader.GetOrdinal(name);
 
-        public override DataTable? GetSchemaTable() => _innerReader.GetSchemaTable();
+        public override DataTable? GetSchemaTable()
+        {
+            // from DbDataAdapter
+            _info.Used();
+            return _innerReader.GetSchemaTable();
+        }
 
         public override string GetString(int ordinal) => _innerReader.GetString(ordinal);
 
@@ -195,9 +200,17 @@ namespace DataAccessTracing
 #endif
 
 #if NET
-        public override Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default) => _innerReader.GetColumnSchemaAsync(cancellationToken);
+        public override Task<ReadOnlyCollection<DbColumn>> GetColumnSchemaAsync(CancellationToken cancellationToken = default)
+        {
+            _info.Used();
+            return _innerReader.GetColumnSchemaAsync(cancellationToken);
+        }
 
-        public override Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default) => _innerReader.GetSchemaTableAsync(cancellationToken);
+        public override Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+        {
+            _info.Used();
+            return _innerReader.GetSchemaTableAsync(cancellationToken);
+        }
 #endif
 
         private bool _closed;
