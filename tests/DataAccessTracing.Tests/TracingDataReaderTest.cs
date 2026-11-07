@@ -26,13 +26,15 @@ namespace DataAccessTracing.Tests
             dt.Columns.Add("colDouble", typeof(double));
             dt.Columns.Add("colFloat", typeof(float));
             dt.Columns.Add("colGuid", typeof(Guid));
+#pragma warning disable IDE0049
             dt.Columns.Add("colInt16", typeof(Int16));
             dt.Columns.Add("colInt32", typeof(Int32));
             dt.Columns.Add("colInt64", typeof(Int64));
+#pragma warning restore IDE0049
             dt.Columns.Add("colString", typeof(string));
             dt.Columns.Add("colDBNull", typeof(string));
 
-            object obj = new object();
+            object obj = new();
             DateTime dtm = DateTime.Now;
             Guid guid = Guid.NewGuid();
             {
