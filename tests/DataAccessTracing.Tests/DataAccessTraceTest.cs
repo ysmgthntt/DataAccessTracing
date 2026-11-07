@@ -133,6 +133,7 @@ namespace DataAccessTracing.Tests
         }
     }
 }
+#pragma warning disable IDE0130
 namespace System.Tests
 {
     internal static class DataAccessTraceTestInSystemNamespace

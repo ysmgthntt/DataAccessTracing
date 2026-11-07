@@ -11,7 +11,9 @@ namespace DataAccessTracing.Tests
 {
     public class TracingConnectionTest
 #if !NET35
-        : IClassFixture<CallerMethodFixture>
+#pragma warning disable CS9113
+        (CallerMethodFixture _) : IClassFixture<CallerMethodFixture>
+#pragma warning restore CS9113
 #endif
     {
         const int DelayLowMargin = 20;

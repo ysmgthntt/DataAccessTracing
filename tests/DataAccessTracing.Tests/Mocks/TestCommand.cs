@@ -66,7 +66,9 @@ namespace DataAccessTracing.Tests.Mocks
             if (ExecuteReaderDataTable is null)
                 return new TestDataReader(null!);
             else
+#pragma warning disable CA2000
                 return new TestDataReader(new DataTableReader(ExecuteReaderDataTable));
+#pragma warning restore CA2000
         }
 
 #if !NET35
@@ -97,7 +99,9 @@ namespace DataAccessTracing.Tests.Mocks
             if (ExecuteReaderDataTable is null)
                 return new TestDataReader(null!);
             else
+#pragma warning disable CA2000
                 return new TestDataReader(new DataTableReader(ExecuteReaderDataTable));
+#pragma warning restore CA2000
         }
 #endif
 

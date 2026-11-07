@@ -4,12 +4,15 @@ using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
 #pragma warning disable CA2007
+#pragma warning disable IDE0017
 
 namespace DataAccessTracing.Tests
 {
     public class TracingCommandTest
 #if !NET35
-        : IClassFixture<CallerMethodFixture>
+#pragma warning disable CS9113
+        (CallerMethodFixture _) : IClassFixture<CallerMethodFixture>
+#pragma warning restore CS9113
 #endif
     {
         const int DelayLowMargin = 10;
@@ -917,7 +920,7 @@ namespace DataAccessTracing.Tests
             tracingCommand.Parameters.Add(new TestParameter { ParameterName = "@P2", Value = "value2" });
             tracingCommand.Parameters.Add(new TestParameter { ParameterName = "@P3", Value = "value3" });
 
-            void CheckCommandExecutionInfo(CommandExecutionInfo info)
+            static void CheckCommandExecutionInfo(CommandExecutionInfo info)
             {
                 Assert.Equal(CommandType.Text, info.CommandType);
                 Assert.Equal(TestCommandText, info.CommandText);

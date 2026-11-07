@@ -2,7 +2,7 @@
 {
     public class CallerMethodFixture : IDisposable
     {
-        public static ManualResetEvent Finished = new ManualResetEvent(true);
+        public static readonly ManualResetEvent Finished = new(true);
 
         private static int _count;
 
