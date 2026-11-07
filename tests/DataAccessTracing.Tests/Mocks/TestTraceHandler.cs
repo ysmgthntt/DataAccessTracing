@@ -25,7 +25,7 @@ namespace DataAccessTracing.Tests.Mocks
         public Action<CommandExecutionInfo>? CommandExecuted;
         protected internal override void OnCommandExecuted(CommandExecutionInfo info) => CommandExecuted!(info);
 
-        public Action<CommandExecutionInfo>? CommandException;
+        public Action<CommandExecutionInfo> CommandException = (_) => { };
         protected internal override void OnCommandException(CommandExecutionInfo info) => CommandException!(info);
 
         public Action<DataReaderInfo>? DataReaderClosed;

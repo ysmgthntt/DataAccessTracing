@@ -200,10 +200,15 @@ namespace DataAccessTracing
         public override Task<DataTable?> GetSchemaTableAsync(CancellationToken cancellationToken = default) => _innerReader.GetSchemaTableAsync(cancellationToken);
 #endif
 
+        private bool _closed;
+
         private void CloseDataReader()
         {
+            if (_closed)
+                return;
             _info.Close(_rowCount);
             _traceHandler.OnDataReaderClosed(_info);
+            _closed = true;
         }
 
         // dispose check

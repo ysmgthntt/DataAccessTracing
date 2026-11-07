@@ -9,7 +9,8 @@ namespace DataAccessTracing.Tests
             public TGet? GetPrivateFieldValue<TGet>(string fieldName)
             {
                 var fi = obj.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-                return (TGet?)fi?.GetValue(obj) ?? default;
+                Assert.NotNull(fi);
+                return (TGet?)fi.GetValue(obj);
             }
         }
     }

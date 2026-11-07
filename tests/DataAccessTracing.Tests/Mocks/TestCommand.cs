@@ -55,13 +55,18 @@ namespace DataAccessTracing.Tests.Mocks
 
         protected override DbParameter CreateDbParameter() => new TestParameter();
 
+        public DataTable? ExecuteReaderDataTable;
+
         protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
         {
             Validate();
             Thread.Sleep(ExecutionDelay);
             if (ThrowException is not null)
                 throw ThrowException;
-            return new TestDataReader();
+            if (ExecuteReaderDataTable is null)
+                return new TestDataReader(null!);
+            else
+                return new TestDataReader(new DataTableReader(ExecuteReaderDataTable));
         }
 
 #if !NET35
@@ -89,7 +94,10 @@ namespace DataAccessTracing.Tests.Mocks
             await Task.Delay(ExecutionDelay, TestContext.Current.CancellationToken);
             if (ThrowException is not null)
                 throw ThrowException;
-            return new TestDataReader();
+            if (ExecuteReaderDataTable is null)
+                return new TestDataReader(null!);
+            else
+                return new TestDataReader(new DataTableReader(ExecuteReaderDataTable));
         }
 #endif
 
