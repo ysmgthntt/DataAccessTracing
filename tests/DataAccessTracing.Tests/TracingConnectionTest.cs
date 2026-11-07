@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using System.Data.Common;
-using System.Reflection;
 using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
@@ -259,7 +258,7 @@ namespace DataAccessTracing.Tests
             var innerCommand = tracingCommand.GetInnerCommand();
             Assert.IsType<TestCommand>(innerCommand);
             Assert.Equal(c, innerCommand?.Connection);
-            CommandInfo? info = (CommandInfo?)tracingCommand.GetType().GetField("_info", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(tracingCommand);
+            var info = tracingCommand.GetPrivateFieldValue<CommandInfo>("_info");
             Assert.Equal(nameof(TracingConnectionTest), info?.CreationMethod?.DeclaringType?.Name);
             Assert.Equal(nameof(CreateCommand), info?.CreationMethod?.Name);
         }

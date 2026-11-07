@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using DataAccessTracing;
 using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
@@ -33,7 +32,7 @@ namespace DataAccessTracing.Tests
             var command = factory.CreateCommand();
             var tracingCommand = Assert.IsType<TracingCommand>(command);
             Assert.IsType<TestCommand>(tracingCommand.GetInnerCommand());
-            CommandInfo? info = (CommandInfo?)tracingCommand.GetType().GetField("_info", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(tracingCommand);
+            var info = tracingCommand.GetPrivateFieldValue<CommandInfo>("_info");
             Assert.Equal(nameof(TracingProviderFactoryTest), info?.CreationMethod?.DeclaringType?.Name);
             Assert.Equal(nameof(CreateCommand), info?.CreationMethod?.Name);
         }
@@ -45,7 +44,7 @@ namespace DataAccessTracing.Tests
             var dataAdapter = factory.CreateDataAdapter();
             var tracingDataAdapter = Assert.IsType<TracingDataAdapter>(dataAdapter);
             Assert.IsType<TestDataAdapter>(tracingDataAdapter.GetInnerDataAdapter());
-            DataAdapterInfo? info = (DataAdapterInfo?)tracingDataAdapter.GetType().GetField("_info", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(tracingDataAdapter);
+            var info = tracingDataAdapter.GetPrivateFieldValue<DataAdapterInfo>("_info");
             Assert.Equal(nameof(TracingProviderFactoryTest), info?.CreationMethod?.DeclaringType?.Name);
             Assert.Equal(nameof(CreateDataAdapter), info?.CreationMethod?.Name);
         }
