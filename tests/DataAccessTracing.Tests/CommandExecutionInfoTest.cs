@@ -51,14 +51,35 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@PPPP", Value = "VALUE4" },
             ];
             {
-                var invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationMissingInCommandText", defaultTraceHandler, true);
-                var ex = Assert.Throws<InvalidParameterException>(() => invalidInfo.Begin());
+                int invalidCount = 0;
+                CommandExecutionInfo? invalidInfo = null;
+                var traceHandler = new TestTraceHandler
+                {
+                    InvalidParameterDetected = (info) =>
+                    {
+                        Assert.Equal(InvalidParameterReason.MissingInCommandText, info.Reason);
+                        Assert.Equal(invalidInfo, info.ExecutionInfo);
+                        Assert.Equal(sql, info.ExecutionInfo.CommandText);
+                        Assert.Equal(2, info.InvalidParameters.Length);
+                        Assert.Single(info.InvalidParameters, p => p.ParameterName == "@PP");
+                        Assert.Single(info.InvalidParameters, p => p.ParameterName == "@PPPP");
+                        invalidCount++;
+                    },
+                };
+                invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationMissingInCommandText", traceHandler, true);
+                Assert.Equal(0, invalidCount);
+                invalidInfo.Begin();
+                Assert.Equal(1, invalidCount);
+
+                invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationMissingInCommandText", defaultTraceHandler, true);
+                var ex = Assert.Throws<InvalidParameterException>(invalidInfo.Begin);
                 Assert.Equal(InvalidParameterReason.MissingInCommandText, ex.Reason);
                 Assert.Equal(invalidInfo, ex.ExecutionInfo);
                 Assert.Equal(sql, ex.ExecutionInfo.CommandText);
                 Assert.Equal(2, ex.InvalidParameters.Length);
                 Assert.Single(ex.InvalidParameters, p => p.ParameterName == "@PP");
                 Assert.Single(ex.InvalidParameters, p => p.ParameterName == "@PPPP");
+                Assert.Equal(1, invalidCount);
             }
 
             const string storedProc = "TestProc";
@@ -70,7 +91,7 @@ namespace DataAccessTracing.Tests
         public void ParameterValidationDuplicateParameterName()
         {
             var defaultTraceHandler = new DefaultDataAccessTraceHandler();
-            const string sql = "SELECT @P, @PP, @PPP";
+            string sql = "SELECT @P, @PP, @PPP";
             TestParameterCollection validParams =
             [
                 new TestParameter { ParameterName = "@P", Value = "VALUE1" },
@@ -89,8 +110,29 @@ namespace DataAccessTracing.Tests
                 new TestParameter { ParameterName = "@PPP", Value = "VALUE5" },
                 new TestParameter { ParameterName = "@P", Value = "VALUE6" },
             ];
+
+            int invalidCount = 0;
+            CommandExecutionInfo? invalidInfo = null;
+            var traceHandler = new TestTraceHandler
             {
-                var invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationDuplicateParameterName", defaultTraceHandler, true);
+                InvalidParameterDetected = (info) =>
+                {
+                    Assert.Equal(InvalidParameterReason.DuplicateParameterName, info.Reason);
+                    Assert.Equal(invalidInfo, info.ExecutionInfo);
+                    Assert.Equal(sql, info.ExecutionInfo.CommandText);
+                    Assert.Equal(5, info.InvalidParameters.Length);
+                    Assert.Equal(3, info.InvalidParameters.Count(p => p.ParameterName == "@P"));
+                    Assert.Equal(2, info.InvalidParameters.Count(p => p.ParameterName == "@PPP"));
+                    invalidCount++;
+                },
+            };
+            {
+                invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationDuplicateParameterName", traceHandler, true);
+                Assert.Equal(0, invalidCount);
+                invalidInfo.Begin();
+                Assert.Equal(1, invalidCount);
+
+                invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.Text, invalidParams, "ParameterValidationDuplicateParameterName", defaultTraceHandler, true);
                 var ex = Assert.Throws<InvalidParameterException>(() => invalidInfo.Begin());
                 Assert.Equal(InvalidParameterReason.DuplicateParameterName, ex.Reason);
                 Assert.Equal(invalidInfo, ex.ExecutionInfo);
@@ -98,17 +140,24 @@ namespace DataAccessTracing.Tests
                 Assert.Equal(5, ex.InvalidParameters.Length);
                 Assert.Equal(3, ex.InvalidParameters.Count(p => p.ParameterName == "@P"));
                 Assert.Equal(2, ex.InvalidParameters.Count(p => p.ParameterName == "@PPP"));
+                Assert.Equal(1, invalidCount);
             }
             {
-                const string storedProc = "TestProc";
-                var storedProcInfo = new CommandExecutionInfo(new CommandInfo(), null, null, storedProc, CommandType.StoredProcedure, invalidParams, "ParameterValidationMissingInCommandText", defaultTraceHandler, true);
-                var ex = Assert.Throws<InvalidParameterException>(() => storedProcInfo.Begin());
+                sql = "TestProc";
+                invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.StoredProcedure, invalidParams, "ParameterValidationDuplicateParameterName", traceHandler, true);
+                Assert.Equal(1, invalidCount);
+                invalidInfo.Begin();
+                Assert.Equal(2, invalidCount);
+
+                invalidInfo = new CommandExecutionInfo(new CommandInfo(), null, null, sql, CommandType.StoredProcedure, invalidParams, "ParameterValidationDuplicateParameterName", defaultTraceHandler, true);
+                var ex = Assert.Throws<InvalidParameterException>(() => invalidInfo.Begin());
                 Assert.Equal(InvalidParameterReason.DuplicateParameterName, ex.Reason);
-                Assert.Equal(storedProcInfo, ex.ExecutionInfo);
-                Assert.Equal(storedProc, ex.ExecutionInfo.CommandText);
+                Assert.Equal(invalidInfo, ex.ExecutionInfo);
+                Assert.Equal(sql, ex.ExecutionInfo.CommandText);
                 Assert.Equal(5, ex.InvalidParameters.Length);
                 Assert.Equal(3, ex.InvalidParameters.Count(p => p.ParameterName == "@P"));
                 Assert.Equal(2, ex.InvalidParameters.Count(p => p.ParameterName == "@PPP"));
+                Assert.Equal(2, invalidCount);
             }
         }
 

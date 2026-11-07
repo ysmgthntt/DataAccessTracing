@@ -96,8 +96,7 @@ namespace DataAccessTracing.Diagnostics
                     var details = new InvalidParameterDetails(this, duplicatedParams.ToArray(), InvalidParameterReason.DuplicateParameterName);
                     _traceHandler.OnInvalidParameterDetected(details);
                 }
-
-                if (_missingParametersInCommandText is not null)
+                else if (_missingParametersInCommandText is not null)
                 {
                     var details = new InvalidParameterDetails(this, _missingParametersInCommandText.ToArray(), InvalidParameterReason.MissingInCommandText);
                     _traceHandler.OnInvalidParameterDetected(details);
