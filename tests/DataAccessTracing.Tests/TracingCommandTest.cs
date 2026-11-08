@@ -664,6 +664,11 @@ namespace DataAccessTracing.Tests
                     Assert.Equal(kind, info.Kind);
                     Assert.Equal(nameof(TracingCommandTest), info.CreationMethod?.DeclaringType?.Name);
                     Assert.Equal(nameof(Unused), info.CreationMethod?.Name);
+                    if (info.Kind == DbObjectKind.Command)
+                    {
+                        var ci = Assert.IsType<CommandInfo>(info);
+                        Assert.Equal("Unused Test", ci.CommandText);
+                    }
                     unusedCount++;
                 },
             };
@@ -688,6 +693,7 @@ namespace DataAccessTracing.Tests
                 var trans = tracingConnection.BeginTransaction();
                 var tracingCommand = tracingConnection.CreateCommand();
                 tracingCommand.Transaction = trans;
+                tracingCommand.CommandText = "Unused Test";
 
                 Assert.Equal(0, unusedCount);
                 kind = DbObjectKind.Command;

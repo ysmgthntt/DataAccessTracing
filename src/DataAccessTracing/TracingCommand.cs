@@ -241,9 +241,13 @@ namespace DataAccessTracing
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2215")]
         public override async ValueTask DisposeAsync()
         {
-            bool anyparam = _innerCommand.Parameters.Cast<object>().Any();
-            if (!_info.IsUsed && !anyparam)
-                _info.CommandText = _innerCommand.CommandText;
+            bool anyparam = false;
+            if (!_info.IsUsed)
+            {
+                anyparam = _innerCommand.Parameters.Cast<object>().Any();
+                if (!anyparam)
+                    _info.CommandText = _innerCommand.CommandText;
+            }
             await _innerCommand.DisposeAsync().ConfigureAwait(false);
             // base.DisposeAsync() を呼ぶと base.Dispose() -> this.Dispose(true) が呼ばれるため、 base.Dispose(true) だけ呼んでおく。
             base.Dispose(true);
@@ -262,9 +266,12 @@ namespace DataAccessTracing
             bool anyparam = false;
             if (disposing)
             {
-                anyparam = _innerCommand.Parameters.Cast<object>().Any();
-                if (!_info.IsUsed && !anyparam)
-                    _info.CommandText = _innerCommand.CommandText;
+                if (!_info.IsUsed)
+                {
+                    anyparam = _innerCommand.Parameters.Cast<object>().Any();
+                    if (!anyparam)
+                        _info.CommandText = _innerCommand.CommandText;
+                }
                 _innerCommand.Dispose();
             }
 
