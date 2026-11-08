@@ -223,4 +223,4 @@ This documentation was prepared with assistance from AI.
 
 ## License
 
-DataAccessTracing is licensed under the [MIT License](LICENSE).
+DataAccessTracing is licensed under the [MIT License](LICENSE.txt).
