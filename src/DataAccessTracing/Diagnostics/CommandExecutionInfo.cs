@@ -7,21 +7,77 @@ using System.Text;
 
 namespace DataAccessTracing.Diagnostics
 {
+    /// <summary>
+    /// Provides information about a database command execution.
+    /// </summary>
     public sealed class CommandExecutionInfo
     {
+        /// <summary>
+        /// Gets the unique identifier of the command execution.
+        /// </summary>
         public Guid ExecutionId { get; }
+
+        /// <summary>
+        /// Gets information about the command.
+        /// </summary>
         public CommandInfo CommandInfo { get; }
+
+        /// <summary>
+        /// Gets information about the connection used to execute the command.
+        /// </summary>
         public ConnectionInfo? ConnectionInfo { get; }
+
+        /// <summary>
+        /// Gets information about the transaction associated with the command execution.
+        /// </summary>
         public TransactionInfo? TransactionInfo { get; }
+
+        /// <summary>
+        /// Gets the name of the method used to execute the command.
+        /// </summary>
         public string ExecutionMethodName { get; }
+
+        /// <summary>
+        /// Gets the calling method.
+        /// </summary>
+        /// <remarks>
+        /// This property may return <see langword="null" /> if the calling method
+        /// cannot be determined, including when called from an asynchronous method.
+        /// </remarks>
         public MethodBase? CallerMethod { get; }
 
+        /// <summary>
+        /// Gets the command text.
+        /// </summary>
         public string CommandText { get; }
+
+        /// <summary>
+        /// Gets the type of the command.
+        /// </summary>
         public CommandType CommandType { get; }
 
+        /// <summary>
+        /// Gets the duration of the command execution.
+        /// </summary>
         public TimeSpan Duration => _sw.Elapsed;
+
+        /// <summary>
+        /// Gets the number of records affected by the command execution.
+        /// </summary>
+        /// <remarks>
+        /// This property contains the return value of <see cref="System.Data.Common.DbCommand.ExecuteNonQuery"/>.
+        /// It is always 0 when the command is executed using <see cref="System.Data.Common.DbCommand.ExecuteScalar"/>
+        /// or <see cref="System.Data.Common.DbCommand.ExecuteReader"/>.
+        /// </remarks>
         public int RecordsAffected { get; internal set; }
 
+        /// <summary>
+        /// Gets the exception associated with the command execution.
+        /// </summary>
+        /// <remarks>
+        /// This property is populated only when <see cref="DataAccessTraceHandler.OnCommandException"/>
+        /// is invoked. It is <see langword="null" /> in other cases.
+        /// </remarks>
         public Exception? Exception
         {
             get;
@@ -60,11 +116,25 @@ namespace DataAccessTracing.Diagnostics
 
         private string? _expandedCommandText;
 
+        /// <summary>
+        /// Gets the command text with parameter placeholders replaced by their values.
+        /// </summary>
+        /// <remarks>
+        /// Parameter placeholders are replaced with their corresponding values
+        /// without parsing the command text.
+        /// This method is intended for logging and diagnostic purposes.
+        /// </remarks>
         public string GetParameterExpandedCommandText()
             => _expandedCommandText ??= CommandType == CommandType.StoredProcedure ? GetStoredProcCommandText() : ExpandCommandText();
 
         private List<ParameterInfo>? _parameters;
 
+        /// <summary>
+        /// Gets the parameters of the command.
+        /// </summary>
+        /// <returns>
+        /// An enumerable collection of the command's parameters.
+        /// </returns>
         public IEnumerable<ParameterInfo> GetParameters()
             // 代入はしない。
             => _parameters ?? EnumerateParameters();

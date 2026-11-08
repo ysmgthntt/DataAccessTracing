@@ -7,10 +7,21 @@ using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
+    /// <summary>
+    /// Provides global configuration and initialization methods for DataAccessTracing.
+    /// </summary>
     public static class DataAccessTrace
     {
         private static bool _replaced;
 
+        /// <summary>
+        /// Replaces all database provider factories registered in <see cref="System.Data.Common.DbProviderFactories"/>
+        /// with tracing provider factories.
+        /// </summary>
+        /// <remarks>
+        /// This method can be called multiple times to replace database provider factories
+        /// registered since the previous call.
+        /// </remarks>
         public static void ReplaceDbProviderFactoriesWithTracingProviders()
         {
             // DbProviderFactories.RegisterFactory で追加できるので、 何度でも実行できるように _replaced はチェックしない。
@@ -103,6 +114,17 @@ namespace DataAccessTracing
             private set;
         }
 
+        /// <summary>
+        /// Sets the default trace handler.
+        /// </summary>
+        /// <param name="traceHandler">The trace handler to use by default.</param>
+        /// <remarks>
+        /// This method must be called before
+        /// <see cref="ReplaceDbProviderFactoriesWithTracingProviders"/>.
+        /// </remarks>
+        /// <exception cref="System.InvalidOperationException">
+        /// The method is called after <see cref="ReplaceDbProviderFactoriesWithTracingProviders"/> has been called.
+        /// </exception>
         public static void SetDefaultTraceHandler(DataAccessTraceHandler traceHandler)
         {
             ArgumentNullException.ThrowIfNull(traceHandler);
@@ -111,6 +133,14 @@ namespace DataAccessTracing
             DefaultTraceHandler = traceHandler;
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether parameter validation is enabled by default.
+        /// </summary>
+        /// <remarks>
+        /// This value is used as the default setting for tracing provider factories.
+        /// This property must be set before calling
+        /// <see cref="ReplaceDbProviderFactoriesWithTracingProviders"/>.
+        /// </remarks>
         public static bool IsParameterValidationEnabledDefault
         {
             get;
@@ -123,6 +153,15 @@ namespace DataAccessTracing
         }
 
         private static bool _excludePrefixesChanged;
+
+        /// <summary>
+        /// Gets or sets the namespace prefixes to exclude when determining the caller's method from a stack trace.
+        /// </summary>
+        /// <remarks>
+        /// Types whose full names start with one of the specified prefixes are excluded.
+        /// The comparison is ordinal and case-sensitive.
+        /// If this property is <see langword="null"/>, no namespace prefixes are excluded.
+        /// </remarks>
         public static IEnumerable<string>? StackTraceExcludedNamespacePrefixes
         {
             get;

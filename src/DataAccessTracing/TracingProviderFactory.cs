@@ -4,6 +4,9 @@ using DataAccessTracing.Diagnostics;
 
 namespace DataAccessTracing
 {
+    /// <summary>
+    /// A provider factory that wraps another provider factory to add tracing functionality.
+    /// </summary>
     public class TracingProviderFactory : DbProviderFactory
     {
         private readonly DbProviderFactory _innerFactory;
@@ -12,12 +15,35 @@ namespace DataAccessTracing
 
         private protected DataAccessTraceHandler TraceHandler { get; init; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether parameter validation is enabled.
+        /// </summary>
+        /// <remarks>
+        /// The initial value is determined by
+        /// <see cref="DataAccessTrace.IsParameterValidationEnabledDefault"/>.
+        /// </remarks>
         public bool IsParameterValidationEnabled { get; set; } = DataAccessTrace.IsParameterValidationEnabledDefault;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TracingProviderFactory"/> class.
+        /// </summary>
+        /// <param name="innerFactory">The provider factory to wrap.</param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="innerFactory"/> is <see langword="null"/>.
+        /// </exception>
         public TracingProviderFactory(DbProviderFactory innerFactory) : this(innerFactory, DataAccessTrace.DefaultTraceHandler)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TracingProviderFactory"/> class
+        /// with the specified trace handler.
+        /// </summary>
+        /// <param name="innerFactory">The provider factory to wrap.</param>
+        /// <param name="traceHandler">The trace handler to use for tracing.</param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="innerFactory"/> or <paramref name="traceHandler"/> is <see langword="null"/>.
+        /// </exception>
         public TracingProviderFactory(DbProviderFactory innerFactory, DataAccessTraceHandler traceHandler)
         {
             ArgumentNullException.ThrowIfNull(innerFactory);
@@ -38,12 +64,15 @@ namespace DataAccessTracing
 
         private protected virtual Type GetInnerFactoryType() => throw new NotImplementedException();
 
+        /// <inheritdoc />
         public override string ToString() => base.ToString() + ", InnerFactory: " + _innerFactory.ToString();
 
         //
 
+        /// <inheritdoc />
         public override bool CanCreateDataSourceEnumerator => _innerFactory.CanCreateDataSourceEnumerator;
 
+        /// <inheritdoc />
         public override DbCommand? CreateCommand()
         {
             var innerCommand = _innerFactory.CreateCommand();
@@ -52,6 +81,7 @@ namespace DataAccessTracing
 
         private bool? _noDeriveParametersMethod;
 
+        /// <inheritdoc />
         public override DbCommandBuilder? CreateCommandBuilder()
         {
             var innerBuilder = _innerFactory.CreateCommandBuilder();
@@ -69,36 +99,47 @@ namespace DataAccessTracing
             return cb;
         }
 
+        /// <inheritdoc />
         public override DbConnection? CreateConnection()
         {
             var innerConnection = _innerFactory.CreateConnection();
             return innerConnection is null ? null : new TracingConnection(innerConnection, TraceHandler, this);
         }
 
+        /// <inheritdoc />
         public override DbConnectionStringBuilder? CreateConnectionStringBuilder() => _innerFactory.CreateConnectionStringBuilder();
 
+        /// <inheritdoc />
         public override DbDataAdapter? CreateDataAdapter()
         {
             var innerAdapter = _innerFactory.CreateDataAdapter();
             return innerAdapter is null ? null : new TracingDataAdapter(innerAdapter, TraceHandler);
         }
 
+        /// <inheritdoc />
         public override DbDataSourceEnumerator? CreateDataSourceEnumerator() => _innerFactory.CreateDataSourceEnumerator();
 
+        /// <inheritdoc />
         public override DbParameter? CreateParameter() => _innerFactory.CreateParameter();
 
 #if !NETFRAMEWORK
+        /// <inheritdoc />
         public override bool CanCreateCommandBuilder => _innerFactory.CanCreateCommandBuilder;
+        /// <inheritdoc />
         public override bool CanCreateDataAdapter => _innerFactory.CanCreateDataAdapter;
 #endif
 
 #if NET
+        /// <inheritdoc />
         public override bool CanCreateBatch => _innerFactory.CanCreateBatch;
 
+        /// <inheritdoc />
         public override DbBatch CreateBatch() => _innerFactory.CreateBatch();
 
+        /// <inheritdoc />
         public override DbBatchCommand CreateBatchCommand() => _innerFactory.CreateBatchCommand();
 
+        /// <inheritdoc />
         public override DbDataSource CreateDataSource(string connectionString)
         {
             var innerDataSource = _innerFactory.CreateDataSource(connectionString);
