@@ -28,6 +28,7 @@
     <Compile Include="..\DataAccessTracing.Tests\Mocks\TestTransaction.cs" Link="Mocks\TestTransaction.cs" />
     <Compile Include="..\DataAccessTracing.Tests\Polyfill.cs" Link="Polyfill.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TestHelper.cs" Link="TestHelper.cs" />
+    <Compile Include="..\DataAccessTracing.Tests\TracingCommandBuilderTest.cs" Link="TracingCommandBuilderTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingCommandTest.cs" Link="TracingCommandTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingConnectionTest.cs" Link="TracingConnectionTest.cs" />
     <Compile Include="..\DataAccessTracing.Tests\TracingDataAdapterTest.cs" Link="TracingDataAdapterTest.cs" />
