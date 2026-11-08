@@ -1,3 +1,6 @@
 [*.cs]
 
 dotnet_diagnostic.IDE0079.severity = silent
+
+# IDE0330: 'System.Threading.Lock' を使用する
+dotnet_diagnostic.IDE0330.severity = silent
