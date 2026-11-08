@@ -67,7 +67,7 @@ namespace DataAccessTracing.Diagnostics
         /// <remarks>
         /// This property contains the return value of <see cref="System.Data.Common.DbCommand.ExecuteNonQuery"/>.
         /// It is always 0 when the command is executed using <see cref="System.Data.Common.DbCommand.ExecuteScalar"/>
-        /// or <see cref="System.Data.Common.DbCommand.ExecuteReader"/>.
+        /// or <see cref="System.Data.Common.DbCommand.ExecuteReader()"/>.
         /// </remarks>
         public int RecordsAffected { get; internal set; }
 
