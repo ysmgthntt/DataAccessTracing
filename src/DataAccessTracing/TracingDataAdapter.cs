@@ -1,5 +1,8 @@
-﻿using System.Data;
+﻿using System.ComponentModel;
+using System.Data;
 using System.Data.Common;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using DataAccessTracing.Diagnostics;
 
@@ -149,6 +152,66 @@ namespace DataAccessTracing
         {
             _info.Used();
             return base.FillSchema(dataSet, schemaType, srcTable, dataReader);
+        }
+
+        // RowUpdating, RowUpdated
+
+        private RowUpdateEventProxy<RowUpdatingEventArgs>? _rowUpdating;
+        public event EventHandler<RowUpdatingEventArgs> RowUpdating
+        {
+            add => (_rowUpdating ??= new RowUpdateEventProxy<RowUpdatingEventArgs>(Events, _innerAdapter, nameof(RowUpdating))).AddHandler(value);
+            remove => _rowUpdating?.RemoveHandler(value);
+        }
+
+        protected override void OnRowUpdating(RowUpdatingEventArgs value)
+            => _rowUpdating?.RaiseRowUpdateEvent(this, value);
+
+        private RowUpdateEventProxy<RowUpdatedEventArgs>? _rowUpdated;
+        public event EventHandler<RowUpdatedEventArgs> RowUpdated
+        {
+            add => (_rowUpdated ??= new RowUpdateEventProxy<RowUpdatedEventArgs>(Events, _innerAdapter, nameof(RowUpdated))).AddHandler(value);
+            remove => _rowUpdated?.RemoveHandler(value);
+        }
+
+        protected override void OnRowUpdated(RowUpdatedEventArgs value)
+            => _rowUpdated?.RaiseRowUpdateEvent(this, value);
+
+        private sealed class RowUpdateEventProxy<TEventArgs>
+            where TEventArgs : EventArgs
+        {
+            private readonly EventHandlerList _events;
+
+            public RowUpdateEventProxy(EventHandlerList events, DbDataAdapter innerAdapter, string eventName)
+            {
+                _events = events;
+                var eventInfo = innerAdapter.GetType().GetEvent(eventName) ?? throw new NotSupportedException($"No {eventName} event.");
+                var handler = typeof(RowUpdateEventProxy<TEventArgs>).GetMethod(nameof(RaiseRowUpdateEvent))!;
+                var rowUpdateEventHandler = CreateEventProxy(eventInfo, handler);
+                eventInfo.AddEventHandler(innerAdapter, rowUpdateEventHandler);
+            }
+
+            public void AddHandler(EventHandler<TEventArgs> handler)
+                => _events.AddHandler(this, handler);
+
+            public void RemoveHandler(EventHandler<TEventArgs> handler)
+                => _events.RemoveHandler(this, handler);
+
+            public void RaiseRowUpdateEvent(object sender, TEventArgs e)
+                => ((EventHandler<TEventArgs>?)_events[this])?.Invoke(sender, e);
+
+            // https://jonnybekkum.wordpress.com/2012/02/19/how-to-c-connect-to-dynamic-event/
+            private Delegate CreateEventProxy(EventInfo evt, MethodInfo handler)
+            {
+                var instanceExpr = Expression.Constant(this);
+                var handlerType = evt.EventHandlerType!;
+                var eventParams = handlerType.GetMethod("Invoke")!.GetParameters();
+                var parameters = new ParameterExpression[2];
+                parameters[0] = Expression.Parameter(eventParams[0].ParameterType, "sender");
+                parameters[1] = Expression.Parameter(eventParams[1].ParameterType, "e");
+                var body = Expression.Call(instanceExpr, handler, parameters[0], parameters[1]);
+                var lambda = Expression.Lambda(body, parameters);
+                return Delegate.CreateDelegate(handlerType, lambda.Compile(), "Invoke");
+            }
         }
 
         // dispose check

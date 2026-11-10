@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Data.Common;
 using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
@@ -597,6 +598,68 @@ namespace DataAccessTracing.Tests
                 Assert.Equal(0, unusedCount);
             }
             Assert.Equal(1, unusedCount);
+        }
+
+        [Fact]
+        public void RowUpdating()
+        {
+            int rowUpdatingCount = 0;
+            var traceHandler = new TestTraceHandler();
+            using var cmd = new TestCommand();
+            using var tracingCommand = new TracingCommand(cmd, traceHandler, null, false);
+            using var da = new TestDataAdapter();
+            using var tracingDataAdapter = new TracingDataAdapter(da, traceHandler);
+            using var dt = new DataTable();
+            var row = dt.NewRow();
+            var tm = new DataTableMapping();
+            void TracingDataAdapter_RowUpdating(object? sender, RowUpdatingEventArgs e)
+            {
+                Assert.Equal(row, e.Row);
+                Assert.Equal(cmd, e.Command);
+                Assert.Equal(StatementType.Select, e.StatementType);
+                Assert.Equal(tm, e.TableMapping);
+                rowUpdatingCount++;
+            }
+            tracingDataAdapter.RowUpdating += TracingDataAdapter_RowUpdating;
+            Assert.Equal(0, rowUpdatingCount);
+            da.RaiseRowUpdatingEvent(row, cmd, StatementType.Select, tm);
+            Assert.Equal(1, rowUpdatingCount);
+            da.RaiseRowUpdatingEvent(row, cmd, StatementType.Select, tm);
+            Assert.Equal(2, rowUpdatingCount);
+            tracingDataAdapter.RowUpdating -= TracingDataAdapter_RowUpdating;
+            da.RaiseRowUpdatingEvent(row, cmd, StatementType.Select, tm);
+            Assert.Equal(2, rowUpdatingCount);
+        }
+
+        [Fact]
+        public void RowUpdated()
+        {
+            int rowUpdatedCount = 0;
+            var traceHandler = new TestTraceHandler();
+            using var cmd = new TestCommand();
+            using var tracingCommand = new TracingCommand(cmd, traceHandler, null, false);
+            using var da = new TestDataAdapter();
+            using var tracingDataAdapter = new TracingDataAdapter(da, traceHandler);
+            using var dt = new DataTable();
+            var row = dt.NewRow();
+            var tm = new DataTableMapping();
+            void TracingDataAdapter_RowUpdated(object? sender, RowUpdatedEventArgs e)
+            {
+                Assert.Equal(row, e.Row);
+                Assert.Equal(cmd, e.Command);
+                Assert.Equal(StatementType.Update, e.StatementType);
+                Assert.Equal(tm, e.TableMapping);
+                rowUpdatedCount++;
+            }
+            tracingDataAdapter.RowUpdated += TracingDataAdapter_RowUpdated;
+            Assert.Equal(0, rowUpdatedCount);
+            da.RaiseRowUpdatedEvent(row, cmd, StatementType.Update, tm);
+            Assert.Equal(1, rowUpdatedCount);
+            da.RaiseRowUpdatedEvent(row, cmd, StatementType.Update, tm);
+            Assert.Equal(2, rowUpdatedCount);
+            tracingDataAdapter.RowUpdated -= TracingDataAdapter_RowUpdated;
+            da.RaiseRowUpdatedEvent(row, cmd, StatementType.Update, tm);
+            Assert.Equal(2, rowUpdatedCount);
         }
     }
 }
