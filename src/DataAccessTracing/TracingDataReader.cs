@@ -102,7 +102,12 @@ namespace DataAccessTracing
 
         public override bool IsDBNull(int ordinal) => _innerReader.IsDBNull(ordinal);
 
-        public override bool NextResult() => _innerReader.NextResult();
+        public override bool NextResult()
+        {
+            // from DbDataAdapter
+            _info.Used();
+            return _innerReader.NextResult();
+        }
 
         public override bool Read()
         {
@@ -160,7 +165,11 @@ namespace DataAccessTracing
 
         public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken) => _innerReader.IsDBNullAsync(ordinal, cancellationToken);
 
-        public override Task<bool> NextResultAsync(CancellationToken cancellationToken) => _innerReader.NextResultAsync(cancellationToken);
+        public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
+        {
+            _info.Used();
+            return _innerReader.NextResultAsync(cancellationToken);
+        }
 
         public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
         {

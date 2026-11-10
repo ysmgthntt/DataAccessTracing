@@ -489,12 +489,18 @@ namespace DataAccessTracing.Tests
                     {
                         dtTest.TableName = "TestTable";
                         dtTest.Columns.Add("colTest");
-                        for (int r = 0; r < 3; r++)
+                        for (int r = 0; r < 6; r++)
                         {
                             var newrow = dtTest.NewRow();
                             newrow["colTest"] = "TestValue";
                             dtTest.Rows.Add(newrow);
+                            if (r >= 2)
+                                newrow.AcceptChanges();
                         }
+                        dtTest.Rows[2]["colTest"] = "modified1";
+                        dtTest.Rows[3]["colTest"] = "modified2";
+                        dtTest.Rows[4].Delete();
+                        dtTest.Rows[5].Delete();
                     }
 
                     using var ds = new DataSet();
@@ -509,7 +515,7 @@ namespace DataAccessTracing.Tests
                     else
                         // Update by base
                         result = tracingDataAdapter.Update(dtTest);
-                    Assert.Equal(3, result);
+                    Assert.Equal(6, result);
                     Assert.False(ds.HasChanges());
                     if (i == 0)
                         Assert.Single(da.TableMappings);
