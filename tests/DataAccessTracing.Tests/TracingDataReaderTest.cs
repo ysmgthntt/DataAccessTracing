@@ -2,8 +2,6 @@
 using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
-#pragma warning disable CA2007
-
 namespace DataAccessTracing.Tests
 {
     public class TracingDataReaderTest

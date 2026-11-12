@@ -2,8 +2,6 @@
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-#pragma warning disable CA2007
-
 namespace DataAccessTracing.Tests.Mocks
 {
     internal sealed class TestCommand : DbCommand

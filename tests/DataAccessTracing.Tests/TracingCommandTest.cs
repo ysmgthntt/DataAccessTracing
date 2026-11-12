@@ -3,7 +3,6 @@ using System.Data.Common;
 using DataAccessTracing.Diagnostics;
 using DataAccessTracing.Tests.Mocks;
 
-#pragma warning disable CA2007
 #pragma warning disable IDE0017
 
 namespace DataAccessTracing.Tests

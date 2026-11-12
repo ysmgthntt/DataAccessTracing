@@ -212,6 +212,3 @@ dotnet_diagnostic.CA2000.severity = error
 
 # CA1816: Dispose メソッドは、SuppressFinalize を呼び出す必要があります
 dotnet_diagnostic.CA1816.severity = silent
-
-# CA2007: 待機中のタスクでの ConfigureAwait の呼び出しを検討してください
-dotnet_diagnostic.CA2007.severity = error
