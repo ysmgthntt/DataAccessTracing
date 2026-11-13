@@ -5,7 +5,7 @@ using Testcontainers.PostgreSql;
 
 namespace DataAccessTracing.Tests
 {
-    public class NpgsqlTest : IAsyncLifetime
+    public class NpgsqlFixture : IAsyncLifetime
     {
         private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder("postgres:17-alpine")
             .WithDatabase("testdb")
@@ -35,6 +35,13 @@ namespace DataAccessTracing.Tests
             return _postgresContainer.DisposeAsync();
         }
 
+        public string ConnectionString => _postgresContainer.GetConnectionString();
+    }
+
+    public class NpgsqlTest(NpgsqlFixture fixture) : IClassFixture<NpgsqlFixture>
+    {
+        private string ConnectionString { get; } = fixture.ConnectionString;
+
         [Fact]
         public async Task DataReaderDispose()
         {
@@ -49,11 +56,10 @@ namespace DataAccessTracing.Tests
                     DataReaderClosed = (_) => { },
                 };
                 var factory = new TracingProviderFactory(NpgsqlFactory.Instance, traceHandler);
-                string connectionString = _postgresContainer.GetConnectionString();
                 for (int i = 0; i < 500; i++)
                 {
                     var connection = factory.CreateConnection()!;
-                    connection.ConnectionString = connectionString;
+                    connection.ConnectionString = ConnectionString;
                     connection.Open();
                     using var command = connection.CreateCommand();
                     command.CommandText = "SELECT * FROM TestTable";
@@ -90,11 +96,10 @@ namespace DataAccessTracing.Tests
                     DataReaderClosed = (_) => { },
                 };
                 var factory = new TracingProviderFactory(NpgsqlFactory.Instance, traceHandler);
-                string connectionString = _postgresContainer.GetConnectionString();
                 for (int i = 0; i < 500; i++)
                 {
                     var connection = factory.CreateConnection()!;
-                    connection.ConnectionString = connectionString;
+                    connection.ConnectionString = ConnectionString;
                     await connection.OpenAsync(TestContext.Current.CancellationToken);
                     using var command = connection.CreateCommand();
                     command.CommandText = "SELECT * FROM TestTable";
