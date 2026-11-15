@@ -13,7 +13,7 @@ namespace DataAccessTracing
 
         internal DbProviderFactory InnerFactory => _innerFactory;
 
-        private protected DataAccessTraceHandler TraceHandler { get; init; }
+        private protected DataAccessTraceHandler TraceHandler { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether parameter validation is enabled.
