@@ -14,7 +14,7 @@ namespace DataAccessTracing.Tests
     {
         extension(Assert)
         {
-            public static Exception Throws<T>(string? paramName, Assert.ThrowsDelegate testCode)
+            public static T Throws<T>(string? paramName, Assert.ThrowsDelegate testCode)
                 where T : ArgumentException
             {
                 var ex = Assert.Throws<T>(testCode);
