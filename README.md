@@ -31,6 +31,22 @@ It helps you understand how your application uses database connections and comma
   - Implement a custom `DataAccessTraceHandler` to handle tracing events.
   - Use the default handler or provide your own implementation.
 
+## Installation
+
+Install DataAccessTracing from NuGet.
+
+Using the .NET CLI:
+
+```bash
+dotnet add package DataAccessTracing
+```
+
+Using the Package Manager Console:
+
+```powershell
+Install-Package DataAccessTracing
+```
+
 ## Getting Started
 
 DataAccessTracing works by wrapping an existing `DbProviderFactory` with `TracingProviderFactory`.
