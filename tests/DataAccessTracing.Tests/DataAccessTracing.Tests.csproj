@@ -5,18 +5,17 @@
     <TargetFrameworks>net11.0;net472</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <LangVersion>14.0</LangVersion>
+    <LangVersion>15.0</LangVersion>
     <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="10.1.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageReference Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" Include="Npgsql" Version="8.0.9" />
     <PackageReference Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'" Include="Npgsql" Version="10.0.3" />
     <PackageReference Include="Testcontainers.PostgreSql" Version="4.16.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
-    <PackageReference Include="xunit.v3" Version="4.0.2" />
+    <PackageReference Include="xunit.v3.mtp-v2" Version="4.0.3" />
   </ItemGroup>
 
   <ItemGroup>
